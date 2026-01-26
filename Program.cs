@@ -1,6 +1,6 @@
 ﻿using System;
 
-Console.WriteLine("Hello, World!");
+
 Console.WriteLine("Welcome to the Conference Room Booking System!\n");
 
 
