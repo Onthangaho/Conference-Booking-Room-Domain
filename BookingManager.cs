@@ -31,13 +31,13 @@ public class BookingManager
 
     /*
      * Processes a booking request end-to-end.
-     * This method clearly shows how decisions are made.
+     
      */
     public bool TryProcessBooking(Guid roomId, BookingRequest request)
     {
         /*
          * LINQ AS A QUESTION:
-         * Does the room exist?
+            * "Find me the room with this ID."
          */
         ConferenceRoom? room =
             _rooms.FirstOrDefault(r => r.Id == roomId);
@@ -64,7 +64,7 @@ public class BookingManager
 
     /*
      * GROUPING BOOKINGS BY STATUS
-     * Demonstrates Dictionary usage.
+     
      */
     public Dictionary<BookingStatus, List<Booking>> GroupBookingsByStatus()
     {
