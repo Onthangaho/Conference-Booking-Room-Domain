@@ -1,7 +1,8 @@
-/*
- * Coordinates bookings across the system.
- * Applies business rules that span multiple collections.
- */
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
+using System.Threading.Tasks;
 public class BookingManager
 {
     /*
@@ -31,7 +32,7 @@ public class BookingManager
         _allBookings.Add(seededBooking);
     }
 
-  
+
 
     /*
      * DEFENSIVE COPY
@@ -67,7 +68,7 @@ public class BookingManager
     }
 
 
-    
+
 
     /*
      * DEFENSIVE COPY
@@ -97,4 +98,49 @@ public class BookingManager
 
         return grouped;
     }
+
+    public async Task SaveBookingsAsync(string filePath)
+    {
+        try
+        {
+            // Take a snapshot to avoid concurrent modification issues
+            var snapshot = _allBookings.ToList();
+
+            // Serialize with indentation for readability
+            string json = JsonSerializer.Serialize(snapshot, new JsonSerializerOptions { WriteIndented = true });
+
+            // Save asynchronously
+            await File.WriteAllTextAsync(filePath, json);
+        }
+        catch (Exception ex)
+        {
+            // Wrap in domain-specific exception
+            throw new BookingException($"Failed to save bookings: {ex.Message}");
+        }
+    }
+
+    public async Task<List<Booking>> LoadBookingsAsync(string filePath)
+    {
+        try
+        {
+            if (!File.Exists(filePath))
+                throw new BookingException("Booking file not found.");
+
+            string json = await File.ReadAllTextAsync(filePath);
+
+            // Deserialize safely, return empty list if corrupted
+            return JsonSerializer.Deserialize<List<Booking>>(json) ?? new List<Booking>();
+        }
+        catch (JsonException)
+        {
+            // Handle corrupted JSON gracefully
+            throw new BookingException("Booking file is corrupted and could not be loaded.");
+        }
+        catch (Exception ex)
+        {
+            throw new BookingException($"Failed to load bookings: {ex.Message}");
+        }
+    }
+
+
 }
