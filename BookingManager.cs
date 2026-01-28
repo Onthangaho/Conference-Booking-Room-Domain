@@ -12,27 +12,26 @@ public class BookingManager
 
     public BookingManager()
     {
+        SeedData();
     }
 
     public void SeedData()
     {
-        ConferenceRoom room1 = new ConferenceRoom(1001, "Small Room", RoomType.Small);
-        ConferenceRoom room2 = new ConferenceRoom(1002, "Medium Room", RoomType.Medium);
-        ConferenceRoom room3 = new ConferenceRoom(1003, "Large Room", RoomType.Large);
+        ConferenceRoom room1 = new(1001, "Small Room", RoomType.Small);
+        ConferenceRoom room2 = new(1002, "Medium Room", RoomType.Medium);
+        ConferenceRoom room3 = new(1003, "Large Room", RoomType.Large);
 
-        Booking seededBooking = new Booking(room2,
+        _rooms.Add(room1);
+        _rooms.Add(room2);
+        _rooms.Add(room3);
+
+        Booking seededBooking = new Booking(room1,
             new BookingRequest("Alice", DateTime.Now.AddHours(1), DateTime.Now.AddHours(2), 4));
         room1.TryAddBooking(seededBooking);
         _allBookings.Add(seededBooking);
     }
-   
-    public void AddRoom(ConferenceRoom room)
-    {
-        if (room == null)
-            throw new Exception("Room cannot be null.");
 
-        _rooms.Add(room);
-    }
+  
 
     /*
      * DEFENSIVE COPY
@@ -66,6 +65,9 @@ public class BookingManager
         _allBookings.Add(booking);
         return approved;
     }
+
+
+    
 
     /*
      * DEFENSIVE COPY

@@ -14,12 +14,12 @@ BookingManager manager = new BookingManager();
 Console.WriteLine("\nAvailable Rooms:");
 foreach (var room in manager.GetRooms())
 {
-    Console.WriteLine($"{room.Name} | Capacity: {room.Capacity} | ID: {room.Id}");
+    Console.WriteLine($"{room.Name} | Max Capacity: {room.Capacity} | Room no: {room.Id}");
 }
 
 // Collect booking details from user
 
-Console.Write("\nEnter Room ID: ");
+Console.Write("\nEnter valid room number: ");
 int roomId = int.Parse(Console.ReadLine()!);
 
 // Find the selected room
