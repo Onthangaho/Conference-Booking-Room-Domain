@@ -27,13 +27,19 @@ public class ConferenceRoom
    
     private readonly List<Booking> _bookings = new List<Booking>();
 
-    public ConferenceRoom(string name, RoomType type)
+    public ConferenceRoom(int id, string name, RoomType type)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
             throw new Exception("Name cannot be null or empty.");
         }
-        Id = Guid.NewGuid();
+        
+        if (id <= 0)
+        {
+            throw new Exception("ID must be a positive integer.");
+        }
+        
+        Id = id;
         Name = name;
         RoomType = type;
 

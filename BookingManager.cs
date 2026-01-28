@@ -10,9 +10,22 @@ public class BookingManager
     private readonly List<ConferenceRoom> _rooms = new();
     private readonly List<Booking> _allBookings = new();
 
-    /*
-     * Adds rooms to the system.
-     */
+    public BookingManager()
+    {
+    }
+
+    public void SeedData()
+    {
+        ConferenceRoom room1 = new ConferenceRoom(1001, "Small Room", RoomType.Small);
+        ConferenceRoom room2 = new ConferenceRoom(1002, "Medium Room", RoomType.Medium);
+        ConferenceRoom room3 = new ConferenceRoom(1003, "Large Room", RoomType.Large);
+
+        Booking seededBooking = new Booking(room2,
+            new BookingRequest("Alice", DateTime.Now.AddHours(1), DateTime.Now.AddHours(2), 4));
+        room1.TryAddBooking(seededBooking);
+        _allBookings.Add(seededBooking);
+    }
+   
     public void AddRoom(ConferenceRoom room)
     {
         if (room == null)
@@ -26,14 +39,14 @@ public class BookingManager
      */
     public IReadOnlyList<ConferenceRoom> GetRooms()
     {
-        return _rooms.ToList();
+        return _rooms.AsReadOnly();
     }
 
     /*
      * Processes a booking request end-to-end.
      
      */
-    public bool TryProcessBooking(Guid roomId, BookingRequest request)
+    public bool TryProcessBooking(int roomId, BookingRequest request)
     {
         /*
          * LINQ AS A QUESTION:
@@ -59,7 +72,7 @@ public class BookingManager
      */
     public IReadOnlyList<Booking> GetAllBookings()
     {
-        return _allBookings.ToList();
+        return _allBookings.AsReadOnly();
     }
 
     /*

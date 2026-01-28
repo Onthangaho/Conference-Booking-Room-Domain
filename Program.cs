@@ -6,13 +6,9 @@ Console.WriteLine("Welcome to the Conference Room Booking System!\n");
 BookingManager manager = new BookingManager();
 
 // Adding sample rooms with mock data
-var room1 = new ConferenceRoom("Small Room", RoomType.Small);
-var room2 = new ConferenceRoom("Medium Room", RoomType.Medium);
-var room3 = new ConferenceRoom("Large Room", RoomType.Large);
 
-manager.AddRoom(room1);
-manager.AddRoom(room2);
-manager.AddRoom(room3);
+
+
 
 // Display available rooms
 Console.WriteLine("\nAvailable Rooms:");
@@ -24,7 +20,7 @@ foreach (var room in manager.GetRooms())
 // Collect booking details from user
 
 Console.Write("\nEnter Room ID: ");
-Guid roomId = Guid.Parse(Console.ReadLine()!);
+int roomId = int.Parse(Console.ReadLine()!);
 
 // Find the selected room
 ConferenceRoom? selectedRoom = manager.GetRooms().FirstOrDefault(r => r.Id == roomId);
