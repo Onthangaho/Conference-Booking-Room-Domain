@@ -22,21 +22,14 @@ BookingRequest request = new BookingRequest(bookedBy, bookingTime, endTime, numb
 ConferenceRoom room = new ConferenceRoom("Meeting Room A", suggestedRoomType);
 
 // Process booking and handle exceptions if anything goes wrong it will be caught here and displayed to the user 
-try
+/*try
 {
     Booking booking = new Booking(request.Name, request.BookingTime, request.EndTime, request.NumberOfAttendees);
 
     room.ValidateBooking(booking);
     booking.Confirmed();
     Console.WriteLine("Booking Details:\n");
-    if (booking.Status == BookingStatus.Confirmed)
-    {
-        Console.WriteLine($"Booking successful for room: {room.Name}");
-    }
-    else
-    {
-        Console.WriteLine("Booking cancelled.");
-    }
+    
 
     Console.WriteLine($"Booked by: {booking.Name}");
     Console.WriteLine($"Room type: {room.RoomType} (with max capacity of {room.capacity} attendees)");
@@ -46,4 +39,4 @@ try
 catch (Exception ex)
 {
     Console.WriteLine($"Booking failed: {ex.Message}");
-}
+}*/

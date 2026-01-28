@@ -1,31 +1,42 @@
 public class Booking
 {
+    public Guid Id { get; }
+    public ConferenceRoom Room { get; }
     public string Name { get; set; }
     public DateTime BookingTime { get; set; }
     public DateTime EndTime { get; set; }
     public int NumberOfAttendees { get; set; }
     public BookingStatus Status { get; private set; }
 
-    public Booking(string name, DateTime bookingTime, DateTime endTime, int numberOfAttendees)
+    public Booking(ConferenceRoom room, BookingRequest request)
     {
-        if (string.IsNullOrWhiteSpace(name))
-        {
-            throw new Exception("Name cannot be null or empty.");
-        }
+        /*
+         * FAIL-FAST VALIDATION
+         * Invalid bookings are rejected immediately.
+         */
+        if (room == null)
+            throw new Exception("Booking must reference an existing room.");
 
-        if (endTime <= bookingTime)
-        {
-            throw new Exception("End time must be after booking time.");
-        }
+        if (string.IsNullOrWhiteSpace(request.Name))
+            throw new Exception("BookedBy cannot be empty.");
 
-        if (numberOfAttendees <= 0)
-        {
-            throw new Exception("Number of attendees must be greater than zero.");
-        }
-        Name = name;
-        BookingTime = bookingTime;
-        EndTime = endTime;
-        NumberOfAttendees = numberOfAttendees;
+        if (request.BookingTime >= request.EndTime)
+            throw new Exception("End time must be after start time.");
+
+        if (request.NumberOfAttendees <= 0)
+            throw new Exception("There must be at least one attendee.");
+
+        if (request.NumberOfAttendees > room.capacity)
+            throw new Exception("Number of attendees exceeds room capacity.");
+
+        Id = Guid.NewGuid();
+        Room = room;
+        Name = request.Name;
+        BookingTime = request.BookingTime;
+        EndTime = request.EndTime;
+        NumberOfAttendees = request.NumberOfAttendees;
+
+        // Initial status of booking is Pending
         Status = BookingStatus.Pending;
     }
     public void Confirmed()
