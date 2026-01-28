@@ -26,7 +26,7 @@ public class Booking
         if (request.NumberOfAttendees <= 0)
             throw new Exception("There must be at least one attendee.");
 
-        if (request.NumberOfAttendees > room.capacity)
+        if (request.NumberOfAttendees > room.Capacity)
             throw new Exception("Number of attendees exceeds room capacity.");
 
         Id = Guid.NewGuid();
