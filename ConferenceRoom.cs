@@ -1,6 +1,6 @@
 public class ConferenceRoom
 {
-    public Guid Id { get; }
+    public int Id { get; }
     public string Name { get; }
     public RoomType RoomType { get; }
 
@@ -61,7 +61,7 @@ public class ConferenceRoom
    */
     public IReadOnlyList<Booking> GetBookings()
     {
-        return _bookings.ToList();
+        return _bookings.AsReadOnly();
     }
 
       public bool IsAvailable(DateTime start, DateTime end)
