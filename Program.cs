@@ -53,6 +53,7 @@ if (!selectedRoom.IsAvailable(bookingTime, endTime))
     return;
 }
 
+
 // Create booking request and process booking
 BookingRequest request = new BookingRequest(bookedBy, bookingTime, endTime, numberOfAttendees);
 
