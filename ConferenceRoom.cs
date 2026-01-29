@@ -1,8 +1,8 @@
 public class ConferenceRoom
 {
-    public int Id { get; }
-    public string Name { get; }
-    public RoomType RoomType { get; }
+    public int Id { get;set  ;}
+    public string Name { get; set; }
+    public RoomType RoomType { get; set; }
 
     // Capacity based on room type
     public int Capacity
@@ -24,7 +24,9 @@ public class ConferenceRoom
         }
     }
 
-   
+   public ConferenceRoom()
+    {
+    }
     private readonly List<Booking> _bookings = new List<Booking>();
 
     public ConferenceRoom(int id, string name, RoomType type)
@@ -33,7 +35,7 @@ public class ConferenceRoom
         {
             throw new Exception("Name cannot be null or empty.");
         }
-        
+
         if (id <= 0)
         {
             throw new Exception("ID must be a positive integer.");
@@ -107,5 +109,16 @@ public class ConferenceRoom
         return _bookings.LastOrDefault();
     }
 
+   // Helper to clear bookings when reloading from file
+    public void ClearBookings()
+    {
+        _bookings.Clear();
+    }
+
+    // Helper to attach a booking when reloading from file
+    public void AttachBooking(Booking booking)
+    {
+        _bookings.Add(booking);
+    }
 
 }

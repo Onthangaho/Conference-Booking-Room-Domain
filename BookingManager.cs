@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using System.IO;
+using System.Text.Json.Serialization;
 public class BookingManager
 {
     /*
@@ -119,28 +121,50 @@ public class BookingManager
         }
     }
 
-    public async Task<List<Booking>> LoadBookingsAsync(string filePath)
+   public async Task LoadBookingsAsync(string filePath)
+{
+    try
     {
-        try
-        {
-            if (!File.Exists(filePath))
-                throw new BookingException("Booking file not found.");
+        if (!File.Exists(filePath))
+            throw new BookingException("Booking file not found.");
 
-            string json = await File.ReadAllTextAsync(filePath);
+        string json = await File.ReadAllTextAsync(filePath);
 
-            // Deserialize safely, return empty list if corrupted
-            return JsonSerializer.Deserialize<List<Booking>>(json) ?? new List<Booking>();
-        }
-        catch (JsonException)
+        var options = new JsonSerializerOptions
         {
-            // Handle corrupted JSON gracefully
-            throw new BookingException("Booking file is corrupted and could not be loaded.");
-        }
-        catch (Exception ex)
+            PropertyNameCaseInsensitive = true
+        };
+        options.Converters.Add(new JsonStringEnumConverter()); // enums as strings
+
+        var loadedBookings = JsonSerializer.Deserialize<List<Booking>>(json, options) ?? new List<Booking>();
+
+        // Reset manager state
+        _allBookings.Clear();
+        foreach (var room in _rooms)
         {
-            throw new BookingException($"Failed to load bookings: {ex.Message}");
+            room.ClearBookings(); // helper in ConferenceRoom
+        }
+
+        // Re‑attach loaded bookings to rooms without re‑confirming
+        foreach (var booking in loadedBookings)
+        {
+            var room = _rooms.FirstOrDefault(r => r.Id == booking.Room.Id);
+            if (room != null)
+            {
+                room.AttachBooking(booking);   // 👈 use helper instead of TryAddBooking
+                _allBookings.Add(booking);
+            }
         }
     }
+    catch (JsonException)
+    {
+        throw new BookingException("Booking file is corrupted and could not be loaded.");
+    }
+    catch (Exception ex)
+    {
+        throw new BookingException($"Failed to load bookings: {ex.Message}");
+    }
+}
 
 
 }

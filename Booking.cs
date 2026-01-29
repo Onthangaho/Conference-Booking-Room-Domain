@@ -1,13 +1,14 @@
 public class Booking
 {
-    public Guid Id { get; }
-    public ConferenceRoom Room { get; }
+    public Guid Id { get; set; }
+    public ConferenceRoom Room { get; set; }
     public string Name { get; set; }
     public DateTime BookingTime { get; set; }
     public DateTime EndTime { get; set; }
     public int NumberOfAttendees { get; set; }
-    public BookingStatus Status { get; private set; }
+    public BookingStatus Status { get;  set; }
 
+public Booking() { }
     public Booking(ConferenceRoom room, BookingRequest request)
     {
         /*
