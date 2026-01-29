@@ -107,9 +107,14 @@ public class BookingManager
         {
             // Take a snapshot to avoid concurrent modification issues
             var snapshot = _allBookings.ToList();
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true    
+            };
+            options.Converters.Add(new JsonStringEnumConverter()); // enums as strings
 
             // Serialize with indentation for readability
-            string json = JsonSerializer.Serialize(snapshot, new JsonSerializerOptions { WriteIndented = true });
+            string json = JsonSerializer.Serialize(snapshot, options);
 
             // Save asynchronously
             await File.WriteAllTextAsync(filePath, json);
