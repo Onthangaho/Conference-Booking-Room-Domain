@@ -1,0 +1,16 @@
+[
+  {
+    "Id": "175e0a7b-ed46-4a57-9f1c-b1963df4fd43",
+    "Room": {
+      "Id": 1001,
+      "Name": "Small Room",
+      "RoomType": 0,
+      "Capacity": 4
+    },
+    "Name": "Alice",
+    "BookingTime": "2026-01-29T03:33:03.1805243+02:00",
+    "EndTime": "2026-01-29T04:33:03.1830757+02:00",
+    "NumberOfAttendees": 4,
+    "Status": 1
+  }
+]
