@@ -2,7 +2,7 @@
 //Additional Enum
 public enum RoomType
 {
-    Small,
-    Medium,
-    Large
+Standard,
+Training,
+BoardRoom
 }

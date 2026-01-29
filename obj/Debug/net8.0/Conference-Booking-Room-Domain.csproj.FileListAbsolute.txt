@@ -13,3 +13,18 @@ D:\Study broh\Bitcube trainee program\C# practice\Conference-Booking-Room-Domain
 D:\Study broh\Bitcube trainee program\C# practice\Conference-Booking-Room-Domain\obj\Debug\net8.0\Conference-Booking-Room-Domain.pdb
 D:\Study broh\Bitcube trainee program\C# practice\Conference-Booking-Room-Domain\obj\Debug\net8.0\Conference-Booking-Room-Domain.genruntimeconfig.cache
 D:\Study broh\Bitcube trainee program\C# practice\Conference-Booking-Room-Domain\obj\Debug\net8.0\ref\Conference-Booking-Room-Domain.dll
+C:\Users\Training Center 1\Thangi\Conference-Booking-Room-Domain\bin\Debug\net8.0\Conference-Booking-Room-Domain.exe
+C:\Users\Training Center 1\Thangi\Conference-Booking-Room-Domain\bin\Debug\net8.0\Conference-Booking-Room-Domain.deps.json
+C:\Users\Training Center 1\Thangi\Conference-Booking-Room-Domain\bin\Debug\net8.0\Conference-Booking-Room-Domain.runtimeconfig.json
+C:\Users\Training Center 1\Thangi\Conference-Booking-Room-Domain\bin\Debug\net8.0\Conference-Booking-Room-Domain.dll
+C:\Users\Training Center 1\Thangi\Conference-Booking-Room-Domain\bin\Debug\net8.0\Conference-Booking-Room-Domain.pdb
+C:\Users\Training Center 1\Thangi\Conference-Booking-Room-Domain\obj\Debug\net8.0\Conference-Booking-Room-Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Training Center 1\Thangi\Conference-Booking-Room-Domain\obj\Debug\net8.0\Conference-Booking-Room-Domain.AssemblyInfoInputs.cache
+C:\Users\Training Center 1\Thangi\Conference-Booking-Room-Domain\obj\Debug\net8.0\Conference-Booking-Room-Domain.AssemblyInfo.cs
+C:\Users\Training Center 1\Thangi\Conference-Booking-Room-Domain\obj\Debug\net8.0\Conference-Booking-Room-Domain.csproj.CoreCompileInputs.cache
+C:\Users\Training Center 1\Thangi\Conference-Booking-Room-Domain\obj\Debug\net8.0\Conference-Booking-Room-Domain.sourcelink.json
+C:\Users\Training Center 1\Thangi\Conference-Booking-Room-Domain\obj\Debug\net8.0\Conference-Booking-Room-Domain.dll
+C:\Users\Training Center 1\Thangi\Conference-Booking-Room-Domain\obj\Debug\net8.0\refint\Conference-Booking-Room-Domain.dll
+C:\Users\Training Center 1\Thangi\Conference-Booking-Room-Domain\obj\Debug\net8.0\Conference-Booking-Room-Domain.pdb
+C:\Users\Training Center 1\Thangi\Conference-Booking-Room-Domain\obj\Debug\net8.0\Conference-Booking-Room-Domain.genruntimeconfig.cache
+C:\Users\Training Center 1\Thangi\Conference-Booking-Room-Domain\obj\Debug\net8.0\ref\Conference-Booking-Room-Domain.dll

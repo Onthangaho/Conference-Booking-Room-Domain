@@ -1,31 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Study broh\\Bitcube trainee program\\C# practice\\Conference-Booking-Room-Domain\\Conference-Booking-Room-Domain.csproj": {}
+    "C:\\Users\\Training Center 1\\Thangi\\Conference-Booking-Room-Domain\\Conference-Booking-Room-Domain.csproj": {}
   },
   "projects": {
-    "D:\\Study broh\\Bitcube trainee program\\C# practice\\Conference-Booking-Room-Domain\\Conference-Booking-Room-Domain.csproj": {
+    "C:\\Users\\Training Center 1\\Thangi\\Conference-Booking-Room-Domain\\Conference-Booking-Room-Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Study broh\\Bitcube trainee program\\C# practice\\Conference-Booking-Room-Domain\\Conference-Booking-Room-Domain.csproj",
+        "projectUniqueName": "C:\\Users\\Training Center 1\\Thangi\\Conference-Booking-Room-Domain\\Conference-Booking-Room-Domain.csproj",
         "projectName": "Conference-Booking-Room-Domain",
-        "projectPath": "D:\\Study broh\\Bitcube trainee program\\C# practice\\Conference-Booking-Room-Domain\\Conference-Booking-Room-Domain.csproj",
-        "packagesPath": "C:\\Users\\Thangi\\.nuget\\packages\\",
-        "outputPath": "D:\\Study broh\\Bitcube trainee program\\C# practice\\Conference-Booking-Room-Domain\\obj\\",
+        "projectPath": "C:\\Users\\Training Center 1\\Thangi\\Conference-Booking-Room-Domain\\Conference-Booking-Room-Domain.csproj",
+        "packagesPath": "C:\\Users\\Training Center 1\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Training Center 1\\Thangi\\Conference-Booking-Room-Domain\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\Thangi\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "C:\\Users\\Training Center 1\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {

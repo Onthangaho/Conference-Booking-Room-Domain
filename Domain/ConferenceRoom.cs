@@ -1,11 +1,11 @@
 public class ConferenceRoom
 {
-    public int Id { get;set  ;}
-    public string Name { get; set; }
-    public RoomType RoomType { get; set; }
+    public int Id { get;}
+    public string Name { get; }
+    public RoomType RoomType { get; }
 
     // Capacity based on room type
-    public int Capacity
+   /* public int Capacity
     {
         get
         {
@@ -22,47 +22,33 @@ public class ConferenceRoom
                 return 12;
             }
         }
-    }
+    }*/
+    public int Capacity { get; }
 
-   public ConferenceRoom()
-    {
-    }
+   
     private readonly List<Booking> _bookings = new List<Booking>();
 
-    public ConferenceRoom(int id, string name, RoomType type)
+    public ConferenceRoom(int id, string name,int capacity, RoomType type)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
             throw new Exception("Name cannot be null or empty.");
         }
 
-        if (id <= 0)
+        if (capacity <= 0)
         {
-            throw new Exception("ID must be a positive integer.");
+            throw new Exception("Capacity must be a positive integer.");
         }
         
-        Id = id;
+        Id =id;
         Name = name;
         RoomType = type;
+        Capacity = capacity;
 
     }
 
     // Determine room type based on number of attendees
-    public static RoomType GetRoomType(int numberOfAttendees)
-    {
-        if (numberOfAttendees <= 4)
-        {
-            return RoomType.Small;
-        }
-        else if (numberOfAttendees <= 10)
-        {
-            return RoomType.Medium;
-        }
-        else
-        {
-            return RoomType.Large;
-        }
-    }
+
     /*
    * DEFENSIVE COPY
    * Returns a snapshot, not the real list.
@@ -72,31 +58,13 @@ public class ConferenceRoom
         return _bookings.AsReadOnly();
     }
 
-      public bool IsAvailable(DateTime start, DateTime end)
-    {
-        return !_bookings.Any(existing =>
-            existing.Status == BookingStatus.Confirmed &&
-            start < existing.EndTime &&
-            end > existing.BookingTime
-        );
-    }
+    
     /*
   * CORE BUSINESS RULE:
   * A room cannot be double-booked.
   */
   // Try to add a booking to the room if available
-    public bool TryAddBooking(Booking booking)
-    {
-          if (!IsAvailable(booking.BookingTime, booking.EndTime))
-        {
-            booking.Cancel();
-            return false;
-        }
-
-        booking.Confirmed();
-        _bookings.Add(booking);
-        return true;
-    }
+  
     // Check if there are any bookings
     public bool HasBookings()
     {
