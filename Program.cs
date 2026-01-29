@@ -199,7 +199,7 @@ namespace ConferenceBookingRoomDomain
                 }
                 else
                 {
-                    Console.WriteLine("--- Loaded Bookings ---");
+                    Console.WriteLine("--_ Loaded Bookings ---");
                     foreach (var booking in bookings)
                     {
                         Console.WriteLine($"- {booking.Name} ({booking.Room.Name}) from {booking.BookingTime} to {booking.EndTime} number of attendees: {booking.NumberOfAttendees} | Status: {booking.Status}");
