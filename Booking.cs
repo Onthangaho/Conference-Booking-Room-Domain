@@ -9,6 +9,7 @@ public class Booking
     public BookingStatus Status { get;  set; }
 
 public Booking() { }
+    
     public Booking(ConferenceRoom room, BookingRequest request)
     {
         /*
