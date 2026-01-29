@@ -191,6 +191,20 @@ namespace ConferenceBookingRoomDomain
             {
                 await manager.LoadBookingsAsync(filePath);
                 Console.WriteLine("\nBookings reloaded from file.");
+
+                var bookings = manager.GetAllBookings();
+                if(bookings.Count == 0)
+                {
+                    Console.WriteLine("No bookings found in the file.");
+                }
+                else
+                {
+                    Console.WriteLine("--- Loaded Bookings ---");
+                    foreach (var booking in bookings)
+                    {
+                        Console.WriteLine($"- {booking.Name} ({booking.Room.Name}) from {booking.BookingTime} to {booking.EndTime} number of attendees: {booking.NumberOfAttendees} | Status: {booking.Status}");
+                    }
+                }
             }
             catch (BookingException ex)
             {
