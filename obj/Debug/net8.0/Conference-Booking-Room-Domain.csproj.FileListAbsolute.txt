@@ -28,3 +28,18 @@ C:\Users\Training Center 1\Thangi\Conference-Booking-Room-Domain\obj\Debug\net8.
 C:\Users\Training Center 1\Thangi\Conference-Booking-Room-Domain\obj\Debug\net8.0\Conference-Booking-Room-Domain.pdb
 C:\Users\Training Center 1\Thangi\Conference-Booking-Room-Domain\obj\Debug\net8.0\Conference-Booking-Room-Domain.genruntimeconfig.cache
 C:\Users\Training Center 1\Thangi\Conference-Booking-Room-Domain\obj\Debug\net8.0\ref\Conference-Booking-Room-Domain.dll
+D:\Study broh\Bitcube trainee program\Conference-Booking-Room-Domain\bin\Debug\net8.0\Conference-Booking-Room-Domain.exe
+D:\Study broh\Bitcube trainee program\Conference-Booking-Room-Domain\bin\Debug\net8.0\Conference-Booking-Room-Domain.deps.json
+D:\Study broh\Bitcube trainee program\Conference-Booking-Room-Domain\bin\Debug\net8.0\Conference-Booking-Room-Domain.runtimeconfig.json
+D:\Study broh\Bitcube trainee program\Conference-Booking-Room-Domain\bin\Debug\net8.0\Conference-Booking-Room-Domain.dll
+D:\Study broh\Bitcube trainee program\Conference-Booking-Room-Domain\bin\Debug\net8.0\Conference-Booking-Room-Domain.pdb
+D:\Study broh\Bitcube trainee program\Conference-Booking-Room-Domain\obj\Debug\net8.0\Conference-Booking-Room-Domain.GeneratedMSBuildEditorConfig.editorconfig
+D:\Study broh\Bitcube trainee program\Conference-Booking-Room-Domain\obj\Debug\net8.0\Conference-Booking-Room-Domain.AssemblyInfoInputs.cache
+D:\Study broh\Bitcube trainee program\Conference-Booking-Room-Domain\obj\Debug\net8.0\Conference-Booking-Room-Domain.AssemblyInfo.cs
+D:\Study broh\Bitcube trainee program\Conference-Booking-Room-Domain\obj\Debug\net8.0\Conference-Booking-Room-Domain.csproj.CoreCompileInputs.cache
+D:\Study broh\Bitcube trainee program\Conference-Booking-Room-Domain\obj\Debug\net8.0\Conference-Booking-Room-Domain.sourcelink.json
+D:\Study broh\Bitcube trainee program\Conference-Booking-Room-Domain\obj\Debug\net8.0\Conference-Booking-Room-Domain.dll
+D:\Study broh\Bitcube trainee program\Conference-Booking-Room-Domain\obj\Debug\net8.0\refint\Conference-Booking-Room-Domain.dll
+D:\Study broh\Bitcube trainee program\Conference-Booking-Room-Domain\obj\Debug\net8.0\Conference-Booking-Room-Domain.pdb
+D:\Study broh\Bitcube trainee program\Conference-Booking-Room-Domain\obj\Debug\net8.0\Conference-Booking-Room-Domain.genruntimeconfig.cache
+D:\Study broh\Bitcube trainee program\Conference-Booking-Room-Domain\obj\Debug\net8.0\ref\Conference-Booking-Room-Domain.dll
