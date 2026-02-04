@@ -1,11 +1,16 @@
 public class ConferenceRoom
 {
-    public int Id { get;}
-    public string Name { get; }
-    public RoomType RoomType { get; }
+    public int Id { get;set; }
+    public string Name { get; set; }
+    public RoomType RoomType { get; set; }
 
   
-    public int Capacity { get; }
+    public int Capacity { get; set; }
+
+    public ConferenceRoom()
+    {
+        
+    }
 
    
     private readonly List<Booking> _bookings = new List<Booking>();
