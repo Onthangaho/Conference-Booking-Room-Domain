@@ -15,12 +15,29 @@ namespace ConferenceBookingRoomAPI.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetAllBookings()
+        public async Task<IActionResult> GetAll()
         {
-            var bookings = _bookingManager.GetAllBookings();
+            var bookings = await _bookingManager.GetAllBookings();
             return Ok(bookings);
         }
-
-     
+      
+        [HttpPost]
+        public async Task<IActionResult> CreateBooking([FromBody] BookingRequest request)
+        {
+            try
+            {
+                var booking = await _bookingManager.CreateBooking(request);
+                 return Ok(booking);
+            }
+            catch (BookingConflictException)
+            {
+                return Conflict("The requested time slot is already booked.");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+        
     }
 }
