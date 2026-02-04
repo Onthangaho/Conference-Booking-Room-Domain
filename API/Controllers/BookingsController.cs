@@ -38,6 +38,19 @@ namespace ConferenceBookingRoomAPI.Controllers
                 return BadRequest(ex.Message);
             }
         }
-        
+        [HttpPut("{id}/cancel")]
+        public async Task<IActionResult> CancelBooking(int id)
+        {
+            var success = await _bookingManager.CancelBooking(id);
+
+            if (!success)
+            {
+                return NotFound($"Booking with ID: {id} not found.");
+
+            }
+            return Ok($"Booking {id} has been cancelled.");
+        }
     }
+
+    
 }
