@@ -22,12 +22,16 @@ namespace ConferenceBookingRoomDomain
         {
             _bookingStore = bookingStore;
             _rooms= seedData.SeedRooms();
+
+            _bookings = _bookingStore.LoadBookingAsync().Result;
         }
 
         //methods
         public async Task<IReadOnlyList<Booking>> GetAllBookings()
-        {
-            return await _bookingStore.LoadBookingAsync();
+        {   
+            _bookings.Clear();
+            _bookings.AddRange(await _bookingStore.LoadBookingAsync());
+            return _bookings.AsReadOnly();
         }
 
         public async Task<Booking> CreateBooking(BookingRequest request)
