@@ -50,6 +50,27 @@ namespace ConferenceBookingRoomAPI.Controllers
             }
             return Ok($"Booking {id} has been cancelled.");
         }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteBooking(int id)
+        {
+            
+            try
+            {
+                var success = await _bookingManager.DeleteBooking(id);
+                if (!success)
+                {
+                    return NotFound($"Booking with ID {id} not found.");
+                }
+
+                return Ok($"Booking {id} has been deleted.");
+            }
+            catch (BookingException ex)
+            {
+                
+                return Conflict(ex.Message);
+            }
+        }
     }
 
     
