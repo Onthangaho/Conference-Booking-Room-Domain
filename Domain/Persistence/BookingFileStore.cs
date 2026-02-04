@@ -1,6 +1,6 @@
 using System.Text.Json;
-
-public class BookingFireStore
+using ConferenceBookingRoomDomain;
+public class BookingFireStore : IBookingStore
 {
 
     private readonly string _filePath;
