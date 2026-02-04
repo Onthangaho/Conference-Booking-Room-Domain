@@ -15,6 +15,13 @@ namespace ConferenceBookingRoomDomain
         private readonly List<ConferenceRoom> _rooms = new();
         private readonly List<Booking> _bookings = new();
 
+        private readonly IBookingStore _bookingStore;
+
+        public BookingManager(IBookingStore bookingStore)
+        {
+            _bookingStore = bookingStore;
+        }
+
         //methods
         public IReadOnlyList<Booking> GetAllBookings()
         {
