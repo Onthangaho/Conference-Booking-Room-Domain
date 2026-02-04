@@ -6,29 +6,31 @@ using System.Threading.Tasks;
 using System.IO;
 using System.Text.Json.Serialization;
 using ConferenceBookingRoomDomain;
+using Conference_Booking_Room_Domain.Data;
 
 namespace ConferenceBookingRoomDomain
 {
     public class BookingManager // Centralised business logic for managing bookings 
     {
         //Properties 
-        private readonly List<ConferenceRoom> _rooms = new();
+        private readonly List<ConferenceRoom> _rooms ;
         private readonly List<Booking> _bookings = new();
 
         private readonly IBookingStore _bookingStore;
 
-        public BookingManager(IBookingStore bookingStore)
+        public BookingManager(IBookingStore bookingStore, SeedData seedData)
         {
             _bookingStore = bookingStore;
+            _rooms= seedData.SeedRooms();
         }
 
         //methods
-        public IReadOnlyList<Booking> GetAllBookings()
+        public async Task<IReadOnlyList<Booking>> GetAllBookings()
         {
-            return _bookings.ToList();
+            return await _bookingStore.LoadBookingAsync();
         }
 
-        public Booking CreateBooking(BookingRequest request)
+        public async Task<Booking> CreateBooking(BookingRequest request)
         {
 
             //Guard Clauses
@@ -54,6 +56,8 @@ namespace ConferenceBookingRoomDomain
 
             booking.Confirm();
             _bookings.Add(booking);
+
+            await _bookingStore.SaveAsync(_bookings);
 
             return booking;
         }
