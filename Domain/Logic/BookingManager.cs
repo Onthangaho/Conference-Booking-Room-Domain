@@ -55,9 +55,7 @@ namespace ConferenceBookingRoomDomain
 
 
 
-        /*
-         * DEFENSIVE COPY
-         */
+        
         public IReadOnlyList<ConferenceRoom> GetRooms()
         {
             return _rooms.AsReadOnly();

@@ -12,21 +12,13 @@ public class Booking
 
     public Booking(ConferenceRoom room, DateTime start, DateTime endTime)
     {
-        /*
-         * FAIL-FAST VALIDATION
-         * Invalid bookings are rejected immediately.
-         */
-
-
-
-
-
+   
         // Id = Guid.NewGuid();
         Room = room;
         Start = start;
         EndTime = endTime;
 
-        // Initial status of booking is Pending
+        
         //Status = BookingStatus.Pending;
     }
     public void Confirm()
