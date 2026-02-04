@@ -74,9 +74,9 @@ Using an enum prevents invalid booking states.
 
 ### RoomType (Enum)
 Defines room size categories:
-- Small
-- Medium
-- Large
+- Standard
+- Training
+- BoardRoom
 
 Room type is used to determine room capacity.
 
@@ -121,15 +121,7 @@ Exceptions are used to stop invalid operations.
 
 ---
 
-## Console Application Usage
 
-The console application is used only to:
-- Create domain objects
-- Test validation rules
-- Display results
-
-
----
 
 ## Installation and Setup
 
@@ -140,18 +132,46 @@ The console application is used only to:
 1. Download and install **.NET SDK 8**
 2. Clone the repo
 3. Change directory to the repo
-4. Create the console application:
+4. Navigate to the API project folder:
    ```bash
-   dotnet new console
-5. Enter code . to open VScode
-6. run the application:
+  cd Conference-Booking-Room-Domain/API
+5. run the API:
 ```bash
   dotnet run
 ```
-## Future Improvents
-- Web APIs
-- USer authentication
-- Booking conflict detection
+6. Open Swagger UI in your browser
+ - eg http://localhost:5247/swagger
 
+## Web API USAGE
+- Example Request and Response
+
+### Create a Booking(Request)
+ 
+POST /api/bookings
+Content-Type: application/json
+
+{
+  "room": {
+    "id": 1,
+    "name": "Room A",
+    "roomType": "Standard",
+    "capacity": 10
+  },
+  "start": "2026-02-03T22:23:42",
+  "endTime": "2026-02-03T23:23:42"
+}
+
+### Response(200 ok)
+{
+  "room": {
+    "id": 1,
+    "name": "Room A",
+    "roomType": "Standard",
+    "capacity": 10
+  },
+  "start": "2026-02-03T22:23:42",
+  "endTime": "2026-02-03T23:23:42",
+  "status": "Confirmed"
+}
 ## Created by
 - Onthangaho Magoro
