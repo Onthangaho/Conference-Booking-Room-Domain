@@ -67,7 +67,19 @@ namespace ConferenceBookingRoomDomain
         }
        
       
+    public async Task<bool> CancelBooking(int bookingId)
+        {
+            
+            var booking =_bookings.FirstOrDefault(b=>b.Id==bookingId);
 
+            if (booking == null)
+            {
+                return false;
+            }
+            booking.Cancel();
+            await _bookingStore.SaveAsync(_bookings);
+            return true;
+        }
 
 
         
