@@ -1,1 +1,1 @@
-[{"Room":{"Id":1,"Name":"Room A","RoomType":0,"Capacity":10},"Start":"2026-02-03T22:23:42.4716597+02:00","EndTime":"2026-02-03T23:23:42.4751708+02:00","Status":1}]
+[{"Room":{"Id":1,"Name":"Room A","RoomType":0,"Capacity":10},"Start":"2026-02-03T22:23:42.4716597+02:00","EndTime":"2026-02-03T23:23:42.4751708+02:00","Status":1},{"Room":{"Id":2,"Name":"Room B","RoomType":2,"Capacity":10},"Start":"2026-02-05T11:26:16.233Z","EndTime":"2026-02-05T12:26:16.233Z","Status":1}]
