@@ -13,7 +13,7 @@ namespace ConferenceBookingRoomDomain
     public class BookingManager // Centralised business logic for managing bookings 
     {
         //Properties 
-        private readonly List<ConferenceRoom> _rooms ;
+        private readonly List<ConferenceRoom> _rooms;
         private readonly List<Booking> _bookings = new();
 
         private readonly IBookingStore _bookingStore;
@@ -21,13 +21,17 @@ namespace ConferenceBookingRoomDomain
         public BookingManager(IBookingStore bookingStore, SeedData seedData)
         {
             _bookingStore = bookingStore;
-            _rooms= seedData.SeedRooms();
+            _rooms = seedData.SeedRooms();
+
+            _bookings = _bookingStore.LoadBookingAsync().Result;
         }
 
         //methods
         public async Task<IReadOnlyList<Booking>> GetAllBookings()
         {
-            return await _bookingStore.LoadBookingAsync();
+            _bookings.Clear();
+            _bookings.AddRange(await _bookingStore.LoadBookingAsync());
+            return _bookings.AsReadOnly();
         }
 
         public async Task<Booking> CreateBooking(BookingRequest request)
@@ -50,9 +54,9 @@ namespace ConferenceBookingRoomDomain
 
             if (overlaps)
             {
-              throw new BookingConflictException ();
+                throw new BookingConflictException();
             }
-            Booking booking = new Booking(request.Room, request.Start,request.EndTime);
+            Booking booking = new Booking(request.Room, request.Start, request.EndTime);
 
             booking.Confirm();
             _bookings.Add(booking);
@@ -61,12 +65,47 @@ namespace ConferenceBookingRoomDomain
 
             return booking;
         }
-       
-      
+
+
+        public async Task<bool> CancelBooking(int bookingId)
+        {
+
+            var booking = _bookings.FirstOrDefault(b => b.Id == bookingId);
+
+            if (booking == null)
+            {
+                return false;
+            }
+            booking.Cancel();
+            await _bookingStore.SaveAsync(_bookings);
+            return true;
+        }
+
+
+        public async  Task<bool> DeleteBooking(int id)
+        {
+            
+            var booking = _bookings.FirstOrDefault(b=>b.Id==id);
+
+            if (booking == null)
+            {
+                return false;
+            }
+
+
+            if (booking!.Status != BookingStatus.Cancelled)
+            {
+                throw new BookingException("Booking must be cancelled before deletion.");
+
+            }
+            _bookings.Remove(booking);
+            await _bookingStore.SaveAsync(_bookings);
+
+            return true;
+        }
 
 
 
-        
         public IReadOnlyList<ConferenceRoom> GetRooms()
         {
             return _rooms.AsReadOnly();
@@ -76,25 +115,25 @@ namespace ConferenceBookingRoomDomain
          * Processes a booking request end-to-end.
 
          */
-         /*
-        public bool TryProcessBooking(int roomId, BookingRequest request)
-        {
-           
-            ConferenceRoom? room =
-                _rooms.FirstOrDefault(r => r.Id == roomId);
+        /*
+       public bool TryProcessBooking(int roomId, BookingRequest request)
+       {
 
-            if (room == null)
-                throw new Exception("Selected room does not exist.");
+           ConferenceRoom? room =
+               _rooms.FirstOrDefault(r => r.Id == roomId);
 
-            // Booking validates itself
-            Booking booking = new Booking(room, request);
+           if (room == null)
+               throw new Exception("Selected room does not exist.");
 
-            bool approved = room.TryAddBooking(booking);
+           // Booking validates itself
+           Booking booking = new Booking(room, request);
 
-            _allBookings.Add(booking);
-            return approved;
-        }
-        */
+           bool approved = room.TryAddBooking(booking);
+
+           _allBookings.Add(booking);
+           return approved;
+       }
+       */
 
 
 
@@ -124,7 +163,7 @@ namespace ConferenceBookingRoomDomain
             return grouped;
         }
 
-       
+
 
 
 
