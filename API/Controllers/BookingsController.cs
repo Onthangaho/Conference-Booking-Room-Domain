@@ -41,7 +41,8 @@ namespace ConferenceBookingRoomAPI.Controllers
                 return BadRequest(new ErrorResponseDto
                 {
                     ErrorCode = "VALIDATION_ERROR",
-                    Message = "The booking request is invalid. Please check the provided data."
+                    Message = "The booking request is invalid. Please check the provided data.",
+                    Category = "ValidationError"
                 });
             }
 
@@ -49,7 +50,7 @@ namespace ConferenceBookingRoomAPI.Controllers
             var room = _bookingManager.GetRooms().FirstOrDefault(r => r.Id == dtoBookingRequest.RoomId);
             if (room == null)
             {
-                throw new BookingNotFoundException(dtoBookingRequest.RoomId);
+                throw new ConferenceRoomNotFoundException(dtoBookingRequest.RoomId);
             }
             var bookinRequest = new BookingRequest(room, dtoBookingRequest.Start, dtoBookingRequest.EndTime);
             var booking = await _bookingManager.CreateBooking(bookinRequest);
@@ -78,7 +79,8 @@ namespace ConferenceBookingRoomAPI.Controllers
                 return BadRequest(new ErrorResponseDto
                 {
                     ErrorCode = "VALIDATION_ERROR",
-                    Message = "The cancellation request is invalid. Please check the provided data."
+                    Message = "The cancellation request is invalid. Please check the provided data.",
+                    Category = "ValidationError"
                 });
 
             }
@@ -87,7 +89,8 @@ namespace ConferenceBookingRoomAPI.Controllers
                 return BadRequest(new ErrorResponseDto
                 {
                     ErrorCode = "ID_MISMATCH",
-                    Message = "The booking ID in the URL does not match the ID in the request body."
+                    Message = "The booking ID in the URL does not match the ID in the request body.",
+                    Category = "ValidationError"    
                 });
             }
             var success = await _bookingManager.CancelBooking(dto.Id);
