@@ -41,62 +41,36 @@ namespace ConferenceBookingRoomAPI.Controllers
                 return BadRequest(new ErrorResponseDto
                 {
                     ErrorCode = "VALIDATION_ERROR",
-                    Message = "The booking request is invalid. Please check the provided data."
+                    Message = "The booking request is invalid. Please check the provided data.",
+                    Category = "ValidationError"
                 });
             }
-            try
+
+
+            var room = _bookingManager.GetRooms().FirstOrDefault(r => r.Id == dtoBookingRequest.RoomId);
+            if (room == null)
             {
-                 var room = _bookingManager.GetRooms().FirstOrDefault(r => r.Id == dtoBookingRequest.RoomId);
-                 if (room == null)
-                 {
-                     return BadRequest(new ErrorResponseDto
-                     {
-                         ErrorCode = "ROOM_NOT_FOUND",
-                         Message = $"Room with ID {dtoBookingRequest.RoomId} does not exist."
-                     });
-                 }
-                 var bookinRequest = new BookingRequest(room, dtoBookingRequest.Start, dtoBookingRequest.EndTime);
-                 var booking = await _bookingManager.CreateBooking(bookinRequest);
-                 
-                 // Map to Response DTO so we don't expose internal domain model directly
-                 var bookingResponse = new BookingResponseDto
-                 {
-                     Id = booking.Id,
-                     RoomName = booking.Room.Name,
-                     RoomType = booking.Room.RoomType.ToString(),
-                     Capacity = booking.Room.Capacity,
-                     Start = booking.Start,
-                     EndTime = booking.EndTime,
-                     Status = booking.Status.ToString()
-                 };
-                return Ok(bookingResponse);
+                throw new ConferenceRoomNotFoundException(dtoBookingRequest.RoomId);
             }
-            catch (BookingConflictException)
+            var bookinRequest = new BookingRequest(room, dtoBookingRequest.Start, dtoBookingRequest.EndTime);
+            var booking = await _bookingManager.CreateBooking(bookinRequest);
+
+            // Map to Response DTO so we don't expose internal domain model directly
+            var bookingResponse = new BookingResponseDto
             {
-                return Conflict(new ErrorResponseDto
-                {
-                    ErrorCode = "BOOKING_CONFLICT",
-                    Message = "The requested booking time conflicts with an existing booking."
-                });
-            }
-            catch (DomainRuleViolationException ex)
-            {
-                return UnprocessableEntity(new ErrorResponseDto
-                {
-                    ErrorCode = "DOMAIN_RULE_VIOLATION",
-                    Message = ex.Message
-                });
-                
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, new ErrorResponseDto
-                {
-                    ErrorCode = "INTERNAL_SERVER_ERROR",
-                    Message = "An unexpected error occurred while processing the booking request."
-                });
-            }
+                Id = booking.Id,
+                RoomName = booking.Room.Name,
+                RoomType = booking.Room.RoomType.ToString(),
+                Capacity = booking.Room.Capacity,
+                Start = booking.Start,
+                EndTime = booking.EndTime,
+                Status = booking.Status.ToString()
+            };
+            return Ok(bookingResponse);
         }
+
+
+
         [HttpPut("{id}/cancel")]
         public async Task<IActionResult> CancelBooking(int id, [FromBody] CancelBookingDto dto)
         {
@@ -105,79 +79,56 @@ namespace ConferenceBookingRoomAPI.Controllers
                 return BadRequest(new ErrorResponseDto
                 {
                     ErrorCode = "VALIDATION_ERROR",
-                    Message = "The cancellation request is invalid. Please check the provided data."
-                }); 
-                
+                    Message = "The cancellation request is invalid. Please check the provided data.",
+                    Category = "ValidationError"
+                });
+
             }
             if (id != dto.Id)
             {
                 return BadRequest(new ErrorResponseDto
                 {
                     ErrorCode = "ID_MISMATCH",
-                    Message = "The booking ID in the URL does not match the ID in the request body."
+                    Message = "The booking ID in the URL does not match the ID in the request body.",
+                    Category = "ValidationError"    
                 });
             }
             var success = await _bookingManager.CancelBooking(dto.Id);
 
             if (!success)
             {
-                return NotFound(new ErrorResponseDto
-                {
-                    ErrorCode = "BOOKING_NOT_FOUND",
-                    Message = $"Booking with ID: {dto.Id} not found."
-                });
-                
+                throw new BookingNotFoundException(dto.Id);
+
 
             }
             return Ok(new ApiResponseDto
             {
                 Message = $"Booking {dto.Id} has been cancelled."
             });
-        
+
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteBooking(int id)
         {
 
-            try
-            {
-                var success = await _bookingManager.DeleteBooking(id);
-                if (!success)
-                {
-                    return NotFound(new ErrorResponseDto
-                    {
-                        ErrorCode = "BOOKING_NOT_FOUND",
-                        Message = $"Booking with ID {id} not found."
-                    });
-                    
-                }
-    
-                return Ok(new ApiResponseDto
-                {
-                    Message = $"Booking {id} has been deleted."
-                });
-            }
-            catch (BookingException ex)
-            {
-                return Conflict(new ErrorResponseDto
-                {
-                    ErrorCode = "BOOKING_ERROR_CONFLICT",
-                    Message = ex.Message
-                });
 
-                
-            }
-            catch (Exception)
+            var success = await _bookingManager.DeleteBooking(id);
+            if (!success)
             {
-                return StatusCode(500, new ErrorResponseDto
-                {
-                    ErrorCode = "INTERNAL_SERVER_ERROR",
-                    Message = "An unexpected error occurred while processing the delete request."
-                });
+                throw new BookingNotFoundException(id);
+
             }
+
+            return Ok(new ApiResponseDto
+            {
+                Message = $"Booking {id} has been deleted."
+            });
+
         }
     }
 
 
 }
+
+

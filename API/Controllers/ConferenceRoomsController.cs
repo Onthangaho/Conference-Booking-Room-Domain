@@ -18,7 +18,15 @@ namespace ConferenceBookingRoomAPI.Controllers
         public IActionResult GetAllConferenceRooms()
         {
             var conferenceRooms = _bookingManager.GetRooms();
-            return Ok(conferenceRooms);
+            var response = conferenceRooms.Select(r => new ConferenceRoomResponseDto
+            {
+                Id = r.Id,
+                Name = r.Name,
+                RoomType = r.RoomType.ToString(),
+                Capacity = r.Capacity
+            });
+
+            return Ok(response);
         }
                 // GET: api/conferenceroom/{id}
         [HttpGet("{id}")]
@@ -27,9 +35,16 @@ namespace ConferenceBookingRoomAPI.Controllers
             var room = _bookingManager.GetRooms().FirstOrDefault(r => r.Id == id);
 
             if (room == null)
-                return NotFound($"Conference room with ID {id} not found.");
+                throw new ConferenceRoomNotFoundException(id);
 
-            return Ok(room);
+            var response = new ConferenceRoomResponseDto
+            {
+                Id = room.Id,
+                Name = room.Name,
+                RoomType = room.RoomType.ToString(),
+                Capacity = room.Capacity
+            };
+            return Ok(response);
         }
 
         

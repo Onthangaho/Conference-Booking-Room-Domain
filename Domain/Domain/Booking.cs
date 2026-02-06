@@ -1,6 +1,6 @@
 public class Booking
 {
-    private static int _idCounter = 1;//created a simple count to assigned to each booking as Id
+    
     // public Guid Id { get; set; }
     public int Id { get;  set; }
     public ConferenceRoom Room { get; set; }
@@ -21,7 +21,7 @@ public class Booking
     {
 
         // Id = Guid.NewGuid();
-        Id = _idCounter++;
+       
         Room = room;
         Start = start;
         EndTime = endTime;

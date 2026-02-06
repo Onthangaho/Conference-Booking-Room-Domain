@@ -8,6 +8,9 @@ using System.Text.Json.Serialization;
 using ConferenceBookingRoomDomain;
 using Conference_Booking_Room_Domain.Data;
 
+
+
+
 namespace ConferenceBookingRoomDomain
 {
     public class BookingManager // Centralised business logic for managing bookings 
@@ -26,6 +29,15 @@ namespace ConferenceBookingRoomDomain
             _bookings = _bookingStore.LoadBookingAsync().Result;
         }
 
+        
+        private int GenerateBookingId()
+        {
+            if (_bookings.Count == 0)
+            {
+                return 1;
+            }
+            return _bookings.Max(b => b.Id) + 1;
+        }
         //methods
         public async Task<IReadOnlyList<Booking>> GetAllBookings()
         {
@@ -45,7 +57,7 @@ namespace ConferenceBookingRoomDomain
 
             if (request.Start >= request.EndTime)
             {
-                throw new Exception("Start time must be before end time");
+                throw new InvalidBookingTimeException(request.Start, request.EndTime);
             }
             //it checks if the room is already booked for the requested time slot
             bool overlaps = _bookings.Any(b => b.Room == request.Room &&
@@ -56,7 +68,10 @@ namespace ConferenceBookingRoomDomain
             {
                 throw new BookingConflictException();
             }
-            Booking booking = new Booking(request.Room, request.Start, request.EndTime);
+            Booking booking = new Booking(request.Room, request.Start, request.EndTime)
+            {
+                Id = GenerateBookingId()
+            };
 
             booking.Confirm();
             _bookings.Add(booking);
@@ -95,8 +110,7 @@ namespace ConferenceBookingRoomDomain
 
             if (booking!.Status != BookingStatus.Cancelled)
             {
-                throw new BookingException("Booking must be cancelled before deletion.");
-
+                throw new BookingDeleteConflictException(id);
             }
             _bookings.Remove(booking);
             await _bookingStore.SaveAsync(_bookings);
