@@ -1,4 +1,10 @@
 using System.Net;
+using ConferenceBookingRoomAPI;
+using ConferenceBookingRoomDomain;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using System.Text.Json;
+
 
 public class ExceptionHandlingMiddleware
 {
@@ -19,31 +25,41 @@ public class ExceptionHandlingMiddleware
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "An unhandled exception occurred.");
-            context.Response.ContentType = "application/json";
 
-            var response = new ErrorResponseDto
-            {
-                ErrorCode = "SERVER_ERROR",
-                Message = "An unexpected error occurred. Please try again later."
-            };
+            var (statusCode, category) = MapException(ex);
+            _logger.LogError(ex, "Exception caught at {Time}. Path: {Path}, Method: {Method}"
+            , DateTime.UtcNow,
+              context.Request.Path,
+              context.Request.Method);
 
+              context.Response.ContentType = "application/json";
+              context.Response.StatusCode = statusCode;
 
+              var errorResponse = new ErrorResponseDto
+              {
+                  ErrorCode = ex.GetType().Name.ToUpperInvariant(),
+                  Message = statusCode>=500 ? "An unexpected error occurred. Please try again later." : ex.Message,
+                  Category = category
+              };
+              await context.Response.WriteAsync(JsonSerializer.Serialize(errorResponse));
         }
 
-        
-    
+
+
     }
-    private  int GetStatusCode(Exception ex)
+    private (int statusCode, string category) MapException( Exception ex)
     {
         // You can customize this method to return different status codes based on exception types
         return ex switch
         {
-           BookingConflictException=> (int)HttpStatusCode.Conflict, //error 409 for booking conflicts
-
-           DomainRuleViolationException => 422, // Unprocessable Entity for domain rule violations
-           BookingNotFoundException => (int)HttpStatusCode.NotFound, //error 404 for not found 404
-           _ => (int)HttpStatusCode.InternalServerError //error 500 for all other exceptions 500
+          BookingConflictException => ((int)HttpStatusCode.Conflict, "BusinessRuleViolation"),
+          DomainRuleViolationException=>(422, "BusinessRuleViolation"),
+            ConferenceRoomNotFoundException => ((int)HttpStatusCode.NotFound, "ClientError"),
+            BookingNotFoundException => ((int)HttpStatusCode.NotFound, "ClientError"),
+            BookingDeleteConflictException => ((int)HttpStatusCode.Conflict, "BusinessRuleViolation"),
+            InvalidBookingTimeException => (422, "BusinessRuleViolation"),
+            InfrastructureFailureException => ((int)HttpStatusCode.InternalServerError, "InfrastructureFailure"),
+            _ => ((int)HttpStatusCode.InternalServerError, "UnexpectedError")
         };
     }
 }
