@@ -1,6 +1,9 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
+
+[ApiController]
+[Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
     private readonly UserManager<ApplicationUser> _userManager;
@@ -18,12 +21,17 @@ public class AuthController : ControllerBase
         var user = await _userManager.FindByNameAsync(loginDto.Username!);
         if (user == null || !await _userManager.CheckPasswordAsync(user, loginDto.Password!))
         {
-            return Unauthorized();
+            return Unauthorized(new { Message = "Invalid username or password" });
         }
 
         var roles = await _userManager.GetRolesAsync(user);
         var token = _jwtTokenService.GenerateToken(user, roles);
 
-        return Ok(new { Token = token });
+        return Ok(new
+        {
+            Token = token,
+            Username = user.UserName,
+            Roles = roles
+        });
     }
 }
