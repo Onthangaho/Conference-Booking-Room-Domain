@@ -8,7 +8,7 @@ public static class DataSeeder
         var userManager = serviceProvider.GetRequiredService<UserManager<ApplicationUser>>();
 
         // Seed roles
-        string[] roles = { "Admin", "User", "Receptionist", "FacilitiesManager" };
+        string[] roles = { "Admin", "Employee", "Receptionist", "FacilitiesManager" };
         foreach (var role in roles)
         {
             if (!await roleManager.RoleExistsAsync(role))
