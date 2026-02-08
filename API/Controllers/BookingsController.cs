@@ -96,6 +96,7 @@ namespace ConferenceBookingRoomAPI.Controllers
 
 
         [HttpPut("{id}/cancel")]
+        [Authorize(Roles = "Employee,Receptionist,Admin")] // Only authenticated users with Employee, Receptionist, or Admin roles can access this endpoint
         public async Task<IActionResult> CancelBooking(int id, [FromBody] CancelBookingDto dto)
         {
             if (!ModelState.IsValid)
@@ -108,6 +109,7 @@ namespace ConferenceBookingRoomAPI.Controllers
                 });
 
             }
+
             if (id != dto.Id)
             {
                 return BadRequest(new ErrorResponseDto
@@ -117,6 +119,12 @@ namespace ConferenceBookingRoomAPI.Controllers
                     Category = "ValidationError"
                 });
             }
+            var booking = await _bookingManager.GetBookingById(dto.Id); 
+            if (booking == null)
+            {
+                throw new BookingNotFoundException(dto.Id);
+            }
+          
             var success = await _bookingManager.CancelBooking(dto.Id);
 
             if (!success)
