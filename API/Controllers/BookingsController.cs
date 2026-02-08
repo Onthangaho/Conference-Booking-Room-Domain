@@ -139,7 +139,7 @@ namespace ConferenceBookingRoomAPI.Controllers
             });
 
         }
-
+       // This endpoint allows an admin to delete a booking, but only if it has already been cancelled. This is a common business rule to prevent accidental deletion of active bookings and to maintain a record of past bookings that were cancelled.
         [HttpDelete("{id}")]
         [Authorize(Roles = "Admin")] // Only authenticated users with Admin role can access this endpoint
         public async Task<IActionResult> DeleteBooking(int id)
