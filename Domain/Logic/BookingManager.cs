@@ -29,7 +29,7 @@ namespace ConferenceBookingRoomDomain
             _bookings = _bookingStore.LoadBookingAsync().Result;
         }
 
-        
+
         private int GenerateBookingId()
         {
             if (_bookings.Count == 0)
@@ -97,10 +97,10 @@ namespace ConferenceBookingRoomDomain
         }
 
 
-        public async  Task<bool> DeleteBooking(int id)
+        public async Task<bool> DeleteBooking(int id)
         {
-            
-            var booking = _bookings.FirstOrDefault(b=>b.Id==id);
+
+            var booking = _bookings.FirstOrDefault(b => b.Id == id);
 
             if (booking == null)
             {
@@ -124,6 +124,12 @@ namespace ConferenceBookingRoomDomain
         {
             return _rooms.AsReadOnly();
         }
+        public async Task<Booking?> GetBookingById(int id)
+        {
+            var bookings = await GetAllBookings();
+            return bookings.FirstOrDefault(b => b.Id == id);
+        }
+
 
         /*
          * Processes a booking request end-to-end.
