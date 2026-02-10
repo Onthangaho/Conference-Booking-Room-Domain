@@ -8,42 +8,41 @@ using System.Text.Json.Serialization;
 using ConferenceBookingRoomDomain;
 using Conference_Booking_Room_Domain.Data;
 
-
-
-
 namespace ConferenceBookingRoomDomain
 {
     public class BookingManager // Centralised business logic for managing bookings 
     {
         //Properties 
-        private readonly List<ConferenceRoom> _rooms;
-        private readonly List<Booking> _bookings = new();
-
         private readonly IBookingStore _bookingStore;
+        private readonly List<ConferenceRoom> _rooms = new List<ConferenceRoom>();
+        
+       
 
         public BookingManager(IBookingStore bookingStore, SeedData seedData)
         {
             _bookingStore = bookingStore;
             _rooms = seedData.SeedRooms();
 
-            _bookings = _bookingStore.LoadBookingAsync().Result;
+          
+
+            
         }
 
 
-        private int GenerateBookingId()
+// Helper method to generate unique booking IDs if not using a database auto-increment
+        private int GenerateBookingId( IReadOnlyList<Booking> bookings)
         {
-            if (_bookings.Count == 0)
+            if (bookings.Count == 0)
             {
                 return 1;
             }
-            return _bookings.Max(b => b.Id) + 1;
+            return bookings.Max(b => b.Id) + 1;
         }
         //methods
         public async Task<IReadOnlyList<Booking>> GetAllBookings()
         {
-            _bookings.Clear();
-            _bookings.AddRange(await _bookingStore.LoadBookingAsync());
-            return _bookings.AsReadOnly();
+            var bookings = await _bookingStore.LoadBookingAsync();
+            return bookings.AsReadOnly();
         }
 
         public async Task<Booking> CreateBooking(BookingRequest request)
@@ -60,7 +59,8 @@ namespace ConferenceBookingRoomDomain
                 throw new InvalidBookingTimeException(request.Start, request.EndTime);
             }
             //it checks if the room is already booked for the requested time slot
-            bool overlaps = _bookings.Any(b => b.Room == request.Room &&
+            var bookings = await _bookingStore.LoadBookingAsync();
+            bool overlaps = bookings.Any(b => b.Room == request.Room &&
             b.Status == BookingStatus.Confirmed &&
             request.Start < b.EndTime && request.EndTime > b.Start);
 
@@ -70,13 +70,13 @@ namespace ConferenceBookingRoomDomain
             }
             Booking booking = new Booking(request.Room, request.Start, request.EndTime)
             {
-                Id = GenerateBookingId()
+                Id = GenerateBookingId(bookings)
             };
 
             booking.Confirm();
-            _bookings.Add(booking);
+            
 
-            await _bookingStore.SaveAsync(_bookings);
+            await _bookingStore.SaveAsync(booking);
 
             return booking;
         }
@@ -85,14 +85,15 @@ namespace ConferenceBookingRoomDomain
         public async Task<bool> CancelBooking(int bookingId)
         {
 
-            var booking = _bookings.FirstOrDefault(b => b.Id == bookingId);
+            var bookings = await _bookingStore.LoadBookingAsync();
+            var booking = bookings.FirstOrDefault(b => b.Id == bookingId);
 
             if (booking == null)
             {
                 return false;
             }
             booking.Cancel();
-            await _bookingStore.SaveAsync(_bookings);
+            await _bookingStore.SaveAsync(booking);
             return true;
         }
 
@@ -100,7 +101,8 @@ namespace ConferenceBookingRoomDomain
         public async Task<bool> DeleteBooking(int id)
         {
 
-            var booking = _bookings.FirstOrDefault(b => b.Id == id);
+            var bookings = await _bookingStore.LoadBookingAsync();
+            var booking = bookings.FirstOrDefault(b => b.Id == id);
 
             if (booking == null)
             {
@@ -112,8 +114,8 @@ namespace ConferenceBookingRoomDomain
             {
                 throw new BookingDeleteConflictException(id);
             }
-            _bookings.Remove(booking);
-            await _bookingStore.SaveAsync(_bookings);
+            bookings.Remove(booking);
+            await _bookingStore.SaveAsync(booking);
 
             return true;
         }
@@ -126,7 +128,7 @@ namespace ConferenceBookingRoomDomain
         }
         public async Task<Booking?> GetBookingById(int id)
         {
-            var bookings = await GetAllBookings();
+            var bookings = await _bookingStore.LoadBookingAsync();
             return bookings.FirstOrDefault(b => b.Id == id);
         }
 
@@ -166,20 +168,11 @@ namespace ConferenceBookingRoomDomain
          * GROUPING BOOKINGS BY STATUS
 
          */
-        public Dictionary<BookingStatus, List<Booking>> GroupBookingsByStatus()
+        public async Task<Dictionary<BookingStatus, List<Booking>>> GroupBookingsByStatus()
         {
-            var grouped = new Dictionary<BookingStatus, List<Booking>>();
-
-            foreach (var booking in _bookings)
-            {
-                if (!grouped.ContainsKey(booking.Status))
-                {
-                    grouped[booking.Status] = new List<Booking>();
-                }
-
-                grouped[booking.Status].Add(booking);
-            }
-
+         var bookings = await _bookingStore.LoadBookingAsync();
+         var grouped = bookings.GroupBy(b => b.Status)
+            .ToDictionary(g => g.Key, g => g.ToList());
             return grouped;
         }
 
