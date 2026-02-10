@@ -14,14 +14,14 @@ namespace ConferenceBookingRoomDomain
     {
         //Properties 
         private readonly IBookingStore _bookingStore;
-        private readonly List<ConferenceRoom> _rooms = new List<ConferenceRoom>();
+        private readonly IRoomStore _roomStore;
         
        
 
-        public BookingManager(IBookingStore bookingStore, SeedData seedData)
+        public BookingManager(IBookingStore bookingStore, IRoomStore roomStore)
         {
             _bookingStore = bookingStore;
-            _rooms = seedData.SeedRooms();
+            _roomStore = roomStore;
 
           
 
@@ -122,9 +122,15 @@ namespace ConferenceBookingRoomDomain
 
 
 
-        public IReadOnlyList<ConferenceRoom> GetRooms()
+        public async Task<IReadOnlyList<ConferenceRoom>> GetRooms()
         {
-            return _rooms.AsReadOnly();
+            var rooms = await _roomStore.LoadRoomsAsync();
+            return rooms.AsReadOnly();
+        }
+
+        public async Task<ConferenceRoom?> GetRoomById(int id)
+        {
+            return await _roomStore.LoadRoomByIdAsync(id);
         }
         public async Task<Booking?> GetBookingById(int id)
         {
