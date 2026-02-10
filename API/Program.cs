@@ -19,7 +19,7 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
-builder.Services.AddSwaggerGen(c=>
+builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new() { Title = "ConferenceBookingAPI", Version = "v1" });
 
@@ -31,8 +31,8 @@ builder.Services.AddSwaggerGen(c=>
         Scheme = "Bearer",
         BearerFormat = "JWT",
         In = Microsoft.OpenApi.Models.ParameterLocation.Header,
-});
-// Require JWT authentication for all endpoints in Swagger
+    });
+    // Require JWT authentication for all endpoints in Swagger
     c.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
     {
         {
@@ -49,7 +49,7 @@ builder.Services.AddSwaggerGen(c=>
     });
 });
 // Register Booking persistence using a safe, known file location
-builder.Services.AddSingleton<IBookingStore>(sp =>
+/*builder.Services.AddSingleton<IBookingStore>(sp =>
 {
     var env = sp.GetRequiredService<IWebHostEnvironment>();
 
@@ -58,7 +58,7 @@ builder.Services.AddSingleton<IBookingStore>(sp =>
 
     return new BookingFireStore(filePath);
 });
-
+*/
 builder.Services.AddDbContext<ConferenceBookingDbContext>(options =>
 options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -86,9 +86,12 @@ builder.Services.AddAuthentication(options =>
 
     };
 });
-builder.Services.AddSingleton<BookingManager>();
-
+// Register the BookingManager as a scoped service so it can be injected into controllers
+builder.Services.AddScoped<IBookingStore, EFBookingStore>();
 builder.Services.AddSingleton<SeedData>();
+builder.Services.AddScoped<BookingManager>();
+
+
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
 
 
@@ -97,7 +100,10 @@ var app = builder.Build();
 // Seed initial data for users and roles
 using (var scope = app.Services.CreateScope())
 {
-  await DataSeeder.SeedRolesAndUserAsync(scope.ServiceProvider);
+    var dbContext = scope.ServiceProvider.GetRequiredService<ConferenceBookingDbContext>();
+    await dbContext.Database.EnsureCreatedAsync(); // Ensure the database is created before seeding
+    await DataSeeder.SeedRolesAndUserAsync(scope.ServiceProvider);
+    //ConferenceRoomSeeder.SeedRooms(dbContext);
 }
 app.UseAuthentication();
 app.UseAuthorization();
