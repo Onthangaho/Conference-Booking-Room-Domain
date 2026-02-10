@@ -1,6 +1,8 @@
+using Microsoft.EntityFrameworkCore;
+
 public static class ConferenceRoomSeeder
 {
-    public static void SeedRooms(ConferenceBookingDbContext context)
+    public static async Task SeedRooms(ConferenceBookingDbContext context)
     {
         var rooms = new List<ConferenceRoom>
         {
@@ -25,12 +27,13 @@ public static class ConferenceRoomSeeder
             foreach (var room in rooms)
             {
                 //if the room with the same name does not exist, add it to the database
-                if (!context.ConferenceRooms.Any(r => r.Name == room.Name))
+             bool roomExists = await context.ConferenceRooms.AnyAsync(r => r.Name == room.Name);
+                if (!roomExists)
                 {
                     context.ConferenceRooms.Add(room);
                 }
             }
 
-            context.SaveChanges();
+            await context.SaveChangesAsync  ();
         }
      }
