@@ -10,6 +10,8 @@ public class Booking
     // public int NumberOfAttendees { get;  }
     public BookingStatus Status { get; set; }
 
+    
+
     public Booking()
     {
        
