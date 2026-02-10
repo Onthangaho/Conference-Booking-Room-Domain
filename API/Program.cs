@@ -87,8 +87,10 @@ builder.Services.AddAuthentication(options =>
     };
 });
 // Register the BookingManager as a scoped service so it can be injected into controllers
+
+builder.Services.AddScoped<IRoomStore, RoomStore>();
 builder.Services.AddScoped<IBookingStore, EFBookingStore>();
-builder.Services.AddSingleton<SeedData>();
+//builder.Services.AddSingleton<SeedData>();
 builder.Services.AddScoped<BookingManager>();
 
 
@@ -103,7 +105,7 @@ using (var scope = app.Services.CreateScope())
     var dbContext = scope.ServiceProvider.GetRequiredService<ConferenceBookingDbContext>();
     await dbContext.Database.EnsureCreatedAsync(); // Ensure the database is created before seeding
     await DataSeeder.SeedRolesAndUserAsync(scope.ServiceProvider);
-    //ConferenceRoomSeeder.SeedRooms(dbContext);
+    await ConferenceRoomSeeder.SeedRoomsAsync(dbContext);
 }
 app.UseAuthentication();
 app.UseAuthorization();
