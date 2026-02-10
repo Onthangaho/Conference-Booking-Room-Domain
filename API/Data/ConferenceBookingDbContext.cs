@@ -3,11 +3,13 @@ using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 
+
 public class ConferenceBookingDbContext : IdentityDbContext<ApplicationUser, IdentityRole, string>
 {
     public ConferenceBookingDbContext(DbContextOptions<ConferenceBookingDbContext> options) : base(options)
     {
     }
+   
     public DbSet<ConferenceRoom> ConferenceRooms { get; set; }
     public DbSet<Booking> Bookings { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
