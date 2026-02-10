@@ -11,13 +11,13 @@ public class BookingFireStore : IBookingStore
         _filePath = filePath;
     }
 
-    public async Task SaveAsync(IEnumerable<Booking> bookings)
+    /*public async Task SaveAsync(IEnumerable<Booking> bookings)
     {
      
      string json = JsonSerializer.Serialize(bookings);
      await File.WriteAllTextAsync(_filePath,json);
 
-    }
+    }*/
 
     public async Task<List<Booking>> LoadBookingAsync()
     {
@@ -30,5 +30,12 @@ public class BookingFireStore : IBookingStore
         string json = await File.ReadAllTextAsync(_filePath);
         return JsonSerializer.Deserialize<List<Booking>>(json) ?? new List<Booking>();
         
+    }
+
+    public Task SaveAsync(Booking booking)
+    {
+        string json = JsonSerializer.Serialize(booking);
+        return File.WriteAllTextAsync(_filePath, json);
+
     }
 }
