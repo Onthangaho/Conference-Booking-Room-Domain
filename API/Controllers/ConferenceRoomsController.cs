@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using ConferenceBookingRoomDomain;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,9 +16,9 @@ namespace ConferenceBookingRoomAPI.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetAllConferenceRooms()
+        public async Task<IActionResult> GetAllConferenceRooms()
         {
-            var conferenceRooms = _bookingManager.GetRooms();
+            var conferenceRooms = await _bookingManager.GetRooms();
             var response = conferenceRooms.Select(r => new ConferenceRoomResponseDto
             {
                 Id = r.Id,
@@ -30,9 +31,9 @@ namespace ConferenceBookingRoomAPI.Controllers
         }
                 // GET: api/conferenceroom/{id}
         [HttpGet("{id}")]
-        public IActionResult GetRoomById(int id)
+        public async Task<IActionResult> GetRoomById(int id)
         {
-            var room = _bookingManager.GetRooms().FirstOrDefault(r => r.Id == id);
+            var room = await _bookingManager.GetRoomById(id);
 
             if (room == null)
                 throw new ConferenceRoomNotFoundException(id);
