@@ -24,8 +24,12 @@ namespace ConferenceBookingRoomAPI.Controllers
                 Id = r.Id,
                 Name = r.Name,
                 RoomType = r.RoomType.ToString(),
-                Capacity = r.Capacity
-            });
+                Capacity = r.Capacity,
+                Location = r.Location,
+                IsActive = r.IsActive,
+              
+            })
+            .ToList();
 
             return Ok(response);
         }
