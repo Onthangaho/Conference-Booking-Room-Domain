@@ -12,6 +12,7 @@ public class ConferenceBookingDbContext : IdentityDbContext<ApplicationUser, Ide
    
     public DbSet<ConferenceRoom> ConferenceRooms { get; set; }
     public DbSet<Booking> Bookings { get; set; }
+    public DbSet<Session> Sessions { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -24,6 +25,35 @@ public class ConferenceBookingDbContext : IdentityDbContext<ApplicationUser, Ide
         //Conference entity rules so that it can be used in the booking entity
         modelBuilder.Entity<ConferenceRoom>()
         .HasKey(c => c.Id);
+
+        modelBuilder.Entity<Session>()
+        .HasData(
+            new Session
+            {
+                Id=1,
+                Title="Daily Standup",
+                Capacity=10,
+                Start=DateTime.UtcNow.AddDays(2),
+                End=DateTime.UtcNow.AddDays(2).AddHours(1)
+            }
+        );
+        
+        // Configure the relationship between Booking and ConferenceRoom
+        modelBuilder.Entity<Booking>()
+        .HasOne(b => b.Room)
+        .WithMany()
+        .OnDelete(DeleteBehavior.Cascade);
+        // Set default value for IsActive property in ConferenceRoom
+        modelBuilder.Entity<ConferenceRoom>()
+        .Property(c => c.IsActive)
+        .HasDefaultValue(true);
+
+        modelBuilder.Entity<Booking>()
+        .Property(b => b.Status)
+        .HasDefaultValue(BookingStatus.Pending);
+
+        
+         
     }
 
 }
