@@ -62,8 +62,8 @@ namespace ConferenceBookingRoomAPI.Controllers
                 });
             }
 
-            var rooms = await _bookingManager.GetRooms();
-            var room = rooms.FirstOrDefault(r => r.Id == dtoBookingRequest.RoomId);
+            var room = await _bookingManager.GetRoomById(dtoBookingRequest.RoomId);
+            ;
             if (room == null)
             {
                 throw new ConferenceRoomNotFoundException(dtoBookingRequest.RoomId);
