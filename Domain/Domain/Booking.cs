@@ -8,7 +8,9 @@ public class Booking
     public DateTime Start { get; set; }
     public DateTime EndTime { get; set; }
     // public int NumberOfAttendees { get;  }
-    public BookingStatus Status { get; set; }
+    public BookingStatus Status { get; set; }= BookingStatus.Pending;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CancelledAt { get; set; }
 
     
 
@@ -27,6 +29,9 @@ public class Booking
         Room = room;
         Start = start;
         EndTime = endTime;
+        Status = BookingStatus.Pending;
+        CreatedAt = DateTime.UtcNow;
+        
 
 
         //Status = BookingStatus.Pending;
@@ -44,6 +49,7 @@ public class Booking
 
 
         Status = BookingStatus.Cancelled;
+        CancelledAt = DateTime.UtcNow;
 
 
     }

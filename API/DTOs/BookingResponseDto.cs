@@ -7,5 +7,8 @@ public class BookingResponseDto
     public DateTime Start { get; set; }
     public DateTime EndTime { get; set; }
     public string? Status { get; set; }
+
+    public DateTime CreatedAt { get; set; }
+    public DateTime? CancelledAt { get; set; }
     public string? CreatedBy { get; set; }
 }

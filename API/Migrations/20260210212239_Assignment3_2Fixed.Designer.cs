@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -9,9 +10,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(ConferenceBookingDbContext))]
-    partial class ConferenceBookingDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260210212239_Assignment3_2Fixed")]
+    partial class Assignment3_2Fixed
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.0");
@@ -293,16 +296,6 @@ namespace API.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Sessions");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Capacity = 10,
-                            End = new DateTime(2026, 2, 13, 6, 44, 35, 90, DateTimeKind.Utc).AddTicks(7246),
-                            Start = new DateTime(2026, 2, 13, 5, 44, 35, 90, DateTimeKind.Utc).AddTicks(7239),
-                            Title = "Daily Standup"
-                        });
                 });
 
             modelBuilder.Entity("Booking", b =>

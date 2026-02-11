@@ -1,11 +1,14 @@
 public class ConferenceRoom
 {
     public int Id { get;set; }
-    public string Name { get; set; }
+    public string Name { get; set; } = string.Empty;
     public RoomType RoomType { get; set; }
 
   
     public int Capacity { get; set; }
+
+    public string Location { get; set; } = string.Empty;
+    public bool IsActive { get; set; } = true;
 
     public ConferenceRoom()
     {
@@ -15,7 +18,7 @@ public class ConferenceRoom
    
     private readonly List<Booking> _bookings = new List<Booking>();
 
-    public ConferenceRoom(int id, string name,int capacity, RoomType type)
+    public ConferenceRoom(int id, string name,int capacity, RoomType type, string location, bool isActive = true)
     {
         if (string.IsNullOrWhiteSpace(name))
         {
@@ -31,7 +34,8 @@ public class ConferenceRoom
         Name = name;
         RoomType = type;
         Capacity = capacity;
-
+        Location = location;
+        IsActive = isActive;
     }
 
   
