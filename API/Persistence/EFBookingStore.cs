@@ -7,7 +7,7 @@ public class EFBookingStore : IBookingStore
     public EFBookingStore(ConferenceBookingDbContext dbContext)
     {
         _dbContext = dbContext;
-    } //
+    }
 
     public async Task SaveAsync(Booking booking)
     {
