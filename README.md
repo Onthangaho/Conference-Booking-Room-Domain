@@ -7,6 +7,7 @@ C# domain model for a Conference Room Booking System, focusing on business rules
 3. [Domain Concepts](#domain-concepts)  
 4. [How the System Works](#how-the-system-works)  
 5. [Design Decisions](#design-decisions)  
+6. [Design Justifications](#design-justifications)
 6. [Error Handling and Validation](#error-handling-and-validation)  
 7. [Console Application Usage](#console-application-usage)  
 8. [Installation and Setup](#installation-and-setup)   
@@ -44,9 +45,10 @@ Represents a physical conference room.
 
 It:
 - Has a name
-- Has a room type (Small, Medium, Large)
-- Determines its capacity based on room type
-- Validates whether a booking can fit in the room
+- Has a room type (Standard, Training, Boardroom)
+- Determines its capacity 
+- Defines its Location
+- Show its availability status using isActive flag
 
 ---
 
@@ -57,15 +59,14 @@ It:
 - Stores who made the booking
 - Stores start and end time
 - Stores number of attendees
-- Controls booking status (Pending, Approved, Cancelled)
+- Controls booking status (Pending, Confirmed, Cancelled)
 
 ---
 
 ### BookingStatus (Enum)
 Defines valid booking states:
 - Pending
-- Approved
-- Rejected
+- Confirmed
 - Cancelled
 
 Using an enum prevents invalid booking states.
@@ -107,6 +108,40 @@ It improves readability and keeps method calls clean.
 This keeps the domain model clean and realistic.
 
 ---
+
+## Design Justifications
+### ConferenceRoom
+- **Location (non‑nullable)**: Every room must have a physical location. Making this field non‑nullable enforces realism — a room without a location would be meaningless in practice.
+
+- **IsActive (non‑nullable, default = true)**: Rooms are assumed available unless marked otherwise. Defaulting to `true` reflects the common case (most rooms are active), while allowing administrators to deactivate rooms when needed.
+
+### Booking
+- **CreatedAt (non‑nullable, default = DateTime.UtcNow)**: Every booking must have a creation timestamp. Defaulting to the current time ensures auditability and transparency without requiring manual input.  
+
+- **CancelledAt (nullable)**: Not all bookings are cancelled. Making this field nullable avoids forcing a value when a booking is still active. It only stores a timestamp when cancellation occurs.  
+
+- **Delete only if cancelled**: This rule depends on `CancelledAt` being nullable — if the field is null, the booking is active and cannot be deleted.
+
+### Session
+- **Title (non‑nullable)**: Every session must have a name to identify the event.  
+
+- **Capacity (non‑nullable)**: A session must define how many attendees it can accommodate. 
+
+- **StartTime / EndTime (non‑nullable)**: Sessions cannot exist without defined times. These fields are required to enforce scheduling.
+
+- **Seeded defaults**: One example session is seeded with realistic values (title, capacity, start/end times) to demonstrate functionality without requiring user input.
+
+---
+
+### Why These Choices Matter
+- **Non‑nullable fields** enforce business rules and prevent invalid states (e.g., a booking without a start time).  
+
+- **Nullable fields** are used only when the value is optional or conditional (e.g., `CancelledAt` only exists if a booking is cancelled)
+.  
+- **Defaults** simplify usage and reflect real‑world expectations (e.g., rooms are active by default, bookings are created with the current timestamp).  
+
+---
+
 
 ## Error Handling and Validation
 
