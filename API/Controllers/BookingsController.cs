@@ -215,38 +215,7 @@ namespace ConferenceBookingRoomAPI.Controllers
             return Ok(bookings);
         }
 
-        // 4. Filter by Active/Inactive Rooms
-        [HttpGet("by-active/{isActive}")]
-        // [Authorize(Roles = "Admin,Employee,Receptionist")]
-        public async Task<IActionResult> GetBookingsByActiveStatus(bool isActive)
-        {
-            var bookings = await _dbContext.Bookings
-                .Include(b => b.Room)
-                .AsNoTracking()
-                .Where(b => b.Room.IsActive == isActive)
-                .Select(b => new BookingSummaryDto
-                {
-                    Id = b.Id,
-                    Room = b.Room.Name,
-                    Location = b.Room.Location,
-                    Start = b.Start,
-                    EndTime = b.EndTime,
-                    Status = b.Status.ToString()
-                })
-                .ToListAsync();
-
-            if (!bookings.Any())
-            {
-                return NotFound(new ErrorResponseDto
-                {
-                    ErrorCode = "NO_BOOKINGS_FOUND",
-                    Message = $"No bookings found for rooms with active status of '{(isActive ? "Active" : "Inactive")}'.",
-                    Category = "NotFound"
-                });
-            }
-
-            return Ok(bookings);
-        }
+    
 
         [HttpGet("by-location/{location}")]
         //[Authorize(Roles = "Admin,Employee,Receptionist")]
@@ -308,6 +277,35 @@ namespace ConferenceBookingRoomAPI.Controllers
 
             return Ok(bookings);
         }
+
+           [HttpGet("sorted")]
+        //[Authorize(Roles = "Admin,Employee,Receptionist")]
+        public async Task<IActionResult> GetSortedBookings(string sortBy = "date")
+        {
+            var query = _dbContext.Bookings.Include(b => b.Room).AsNoTracking();
+
+            query = sortBy switch
+            {
+                "room" => query.OrderBy(b => b.Room.Name),
+                "created" => query.OrderBy(b => b.CreatedAt),
+                _ => query.OrderBy(b => b.Start)
+            };
+
+            var results = await query
+                .Select(b => new BookingSummaryDto
+                {
+                    Id = b.Id,
+                    Room = b.Room.Name,
+                    Location = b.Room.Location,
+                    Start = b.Start,
+                    EndTime = b.EndTime,
+                    Status = b.Status.ToString()
+                })
+                .ToListAsync();
+
+            return Ok(results);
+        }
+
         [HttpGet("search")]
         //[Authorize(Roles = "Admin,Employee,Receptionist")]
         public async Task<IActionResult> SearchBookings(
