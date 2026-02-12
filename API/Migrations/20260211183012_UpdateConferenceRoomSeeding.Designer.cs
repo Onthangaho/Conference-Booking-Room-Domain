@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -9,9 +10,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API.Migrations
 {
     [DbContext(typeof(ConferenceBookingDbContext))]
-    partial class ConferenceBookingDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260211183012_UpdateConferenceRoomSeeding")]
+    partial class UpdateConferenceRoomSeeding
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.0");
@@ -86,13 +89,11 @@ namespace API.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime?>("CancelledAt")
+                    b.Property<DateTime>("CancelledAt")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT")
-                        .HasDefaultValueSql("CURRENT_TIMESTAMP");
+                        .HasColumnType("TEXT");
 
                     b.Property<DateTime>("EndTime")
                         .HasColumnType("TEXT");
@@ -301,8 +302,8 @@ namespace API.Migrations
                         {
                             Id = 1,
                             Capacity = 10,
-                            End = new DateTime(2026, 2, 13, 21, 32, 43, 43, DateTimeKind.Utc).AddTicks(434),
-                            Start = new DateTime(2026, 2, 13, 20, 32, 43, 43, DateTimeKind.Utc).AddTicks(427),
+                            End = new DateTime(2026, 2, 13, 19, 30, 10, 313, DateTimeKind.Utc).AddTicks(945),
+                            Start = new DateTime(2026, 2, 13, 18, 30, 10, 313, DateTimeKind.Utc).AddTicks(938),
                             Title = "Daily Standup"
                         });
                 });

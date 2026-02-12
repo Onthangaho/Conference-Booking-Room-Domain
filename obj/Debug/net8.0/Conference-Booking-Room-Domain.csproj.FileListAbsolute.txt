@@ -43,3 +43,4 @@ D:\Study broh\Bitcube trainee program\Conference-Booking-Room-Domain\obj\Debug\n
 D:\Study broh\Bitcube trainee program\Conference-Booking-Room-Domain\obj\Debug\net8.0\Conference-Booking-Room-Domain.pdb
 D:\Study broh\Bitcube trainee program\Conference-Booking-Room-Domain\obj\Debug\net8.0\Conference-Booking-Room-Domain.genruntimeconfig.cache
 D:\Study broh\Bitcube trainee program\Conference-Booking-Room-Domain\obj\Debug\net8.0\ref\Conference-Booking-Room-Domain.dll
+D:\Study broh\Bitcube trainee program\Conference-Booking-Room-Domain\obj\Debug\net8.0\Conference-Booking-Room-Domain.csproj.AssemblyReference.cache

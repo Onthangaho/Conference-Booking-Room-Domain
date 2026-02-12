@@ -10,7 +10,7 @@ public class Booking
     // public int NumberOfAttendees { get;  }
     public BookingStatus Status { get; set; }= BookingStatus.Pending;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    public DateTime CancelledAt { get; set; }
+    public DateTime? CancelledAt { get; set; }
 
     
 

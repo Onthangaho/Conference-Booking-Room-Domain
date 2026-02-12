@@ -47,6 +47,7 @@ namespace ConferenceBookingRoomDomain
 
         public async Task<Booking> CreateBooking(BookingRequest request)
         {
+            
 
             //Guard Clauses
             if (request.Room == null)
@@ -57,6 +58,11 @@ namespace ConferenceBookingRoomDomain
             if (request.Start >= request.EndTime)
             {
                 throw new InvalidBookingTimeException(request.Start, request.EndTime);
+            }
+            var room = await _roomStore.LoadRoomByIdAsync(request.Room.Id);
+            if (room == null)
+            {
+                throw new Exception($"Room with ID {request.Room.Id} not found.");
             }
             //it checks if the room is already booked for the requested time slot
             var bookings = await _bookingStore.LoadBookingAsync();
@@ -70,7 +76,8 @@ namespace ConferenceBookingRoomDomain
             }
             Booking booking = new Booking(request.Room, request.Start, request.EndTime)
             {
-                Id = GenerateBookingId(bookings)
+                Id = GenerateBookingId(bookings),
+                CreatedAt = DateTime.UtcNow
             };
 
             booking.Confirm();
@@ -93,7 +100,7 @@ namespace ConferenceBookingRoomDomain
                 return false;
             }
             booking.Cancel();
-            await _bookingStore.SaveAsync(booking);
+            await _bookingStore.UpdateAsync(booking);
             return true;
         }
 
@@ -115,7 +122,7 @@ namespace ConferenceBookingRoomDomain
                 throw new BookingDeleteConflictException(id);
             }
             bookings.Remove(booking);
-            await _bookingStore.SaveAsync(booking);
+            await _bookingStore.DeleteAsync(booking);
 
             return true;
         }

@@ -1,6 +1,7 @@
 using ConferenceBookingRoomDomain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace ConferenceBookingRoomAPI.Controllers
 {
@@ -9,10 +10,12 @@ namespace ConferenceBookingRoomAPI.Controllers
     public class BookingsController : ControllerBase
     {
         private readonly BookingManager _bookingManager;
+        private readonly ConferenceBookingDbContext _dbContext;
 
-        public BookingsController(BookingManager bookingManager)
+        public BookingsController(BookingManager bookingManager, ConferenceBookingDbContext dbContext)
         {
             _bookingManager = bookingManager;
+            _dbContext = dbContext;
         }
 
         [HttpPost("maintenance")]
@@ -62,8 +65,8 @@ namespace ConferenceBookingRoomAPI.Controllers
                 });
             }
 
-            var rooms = await _bookingManager.GetRooms();
-            var room = rooms.FirstOrDefault(r => r.Id == dtoBookingRequest.RoomId);
+            var room = await _bookingManager.GetRoomById(dtoBookingRequest.RoomId);
+            ;
             if (room == null)
             {
                 throw new ConferenceRoomNotFoundException(dtoBookingRequest.RoomId);
@@ -161,10 +164,11 @@ namespace ConferenceBookingRoomAPI.Controllers
         {
 
             var booking = await _bookingManager.GetBookingById(id);
-            if (booking == null)            {
+            if (booking == null)
+            {
                 throw new BookingNotFoundException(id);
             }
-            
+
             var success = await _bookingManager.DeleteBooking(id);
             if (!success)
             {
@@ -178,6 +182,201 @@ namespace ConferenceBookingRoomAPI.Controllers
             });
 
         }
+
+        [HttpGet("by-room/{roomId}")]
+        // [Authorize(Roles = "Admin,Employee,Receptionist")]
+        public async Task<IActionResult> GetBookingsByRoom(int roomId)
+        {
+            var bookings = await _dbContext.Bookings
+                .Include(b => b.Room)
+                .AsNoTracking()
+                .Where(b => b.Room.Id == roomId)
+                .Select(b => new BookingSummaryDto
+                {
+                    Id = b.Id,
+                    Room = b.Room.Name,
+                    Location = b.Room.Location,
+                    Start = b.Start,
+                    EndTime = b.EndTime,
+                    Status = b.Status.ToString()
+                })
+                .ToListAsync();
+
+            if (!bookings.Any())
+            {
+                return NotFound(new ErrorResponseDto
+                {
+                    ErrorCode = "NO_BOOKINGS_FOUND",
+                    Message = $"No bookings found for room ID '{roomId}'.",
+                    Category = "NotFound"
+                });
+            }
+
+            return Ok(bookings);
+        }
+
+    
+
+        [HttpGet("by-location/{location}")]
+        //[Authorize(Roles = "Admin,Employee,Receptionist")]
+        public async Task<IActionResult> GetBookingsByLocation(string location)
+        {
+            var bookings = await _dbContext.Bookings
+                .Include(b => b.Room)
+                .AsNoTracking()
+                .Where(b => b.Room.Location == location)
+                .Select(b => new BookingSummaryDto
+                {
+                    Id = b.Id,
+                    Room = b.Room.Name,
+                    Location = b.Room.Location,
+                    Start = b.Start,
+                    EndTime = b.EndTime,
+                    Status = b.Status.ToString()
+                })
+                .ToListAsync();
+                if (!bookings.Any())
+                {
+                    return NotFound(new ErrorResponseDto
+                    {
+                        ErrorCode = "NO_BOOKINGS_FOUND",
+                        Message = $"No bookings found for location '{location}'.",
+                        Category = "NotFound"
+                    });
+                }
+
+            return Ok(bookings);
+        }
+        [HttpGet("by-status/{status}")]
+        public async Task<IActionResult> GetBookingsByStatus(BookingStatus status)
+        {
+            var bookings = await _dbContext.Bookings
+                .Include(b => b.Room)
+                .AsNoTracking()
+                .Where(b => b.Status == status)
+                .Select(b => new BookingSummaryDto
+                {
+                    Id = b.Id,
+                    Room = b.Room.Name,
+                    Location = b.Room.Location,
+                    Start = b.Start,
+                    EndTime = b.EndTime,
+                    Status = b.Status.ToString()
+                })
+                .ToListAsync();
+
+                if (!bookings.Any())
+                {
+                    return NotFound(new ErrorResponseDto
+                    {
+                        ErrorCode = "NO_BOOKINGS_FOUND",
+                        Message = $"No bookings found with status '{status}'.",
+                        Category = "NotFound"
+                    });
+                }
+
+            return Ok(bookings);
+        }
+
+           [HttpGet("sorted")]
+        //[Authorize(Roles = "Admin,Employee,Receptionist")]
+        public async Task<IActionResult> GetSortedBookings(string sortBy = "date")
+        {
+            var query = _dbContext.Bookings.Include(b => b.Room).AsNoTracking();
+
+            query = sortBy switch
+            {
+                "room" => query.OrderBy(b => b.Room.Name),
+                "created" => query.OrderBy(b => b.CreatedAt),
+                _ => query.OrderBy(b => b.Start)
+            };
+
+            var results = await query
+                .Select(b => new BookingSummaryDto
+                {
+                    Id = b.Id,
+                    Room = b.Room.Name,
+                    Location = b.Room.Location,
+                    Start = b.Start,
+                    EndTime = b.EndTime,
+                    Status = b.Status.ToString()
+                })
+                .ToListAsync();
+
+            return Ok(results);
+        }
+
+        [HttpGet("search")]
+        //[Authorize(Roles = "Admin,Employee,Receptionist")]
+        public async Task<IActionResult> SearchBookings(
+            [FromQuery] int? roomId,
+            [FromQuery] string? location,
+            [FromQuery] DateTime? startDate,
+            [FromQuery] DateTime? endDate,
+            [FromQuery] bool? isActive,
+            [FromQuery] string sortBy = "date",
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 10)
+        {
+            var query = _dbContext.Bookings
+                .Include(b => b.Room)
+                .AsNoTracking()
+                .AsQueryable();
+
+            // Filtering
+            if (roomId.HasValue)
+                query = query.Where(b => b.Room.Id == roomId.Value);
+
+            if (!string.IsNullOrEmpty(location))
+                query = query.Where(b => b.Room.Location == location);
+
+            if (startDate.HasValue && endDate.HasValue)
+                query = query.Where(b => b.Start >= startDate.Value && b.EndTime <= endDate.Value);
+
+            if (isActive.HasValue)
+                query = query.Where(b => b.Room.IsActive == isActive.Value);
+
+            // Sorting
+            query = sortBy switch
+            {
+                "room" => query.OrderBy(b => b.Room.Name),
+                "created" => query.OrderBy(b => b.CreatedAt),
+                _ => query.OrderBy(b => b.Start)
+            };
+
+            // Pagination
+            var totalCount = await query.CountAsync();
+
+            var bookings = await query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(b => new BookingSummaryDto
+                {
+                    Id = b.Id,
+                    Room= b.Room.Name,
+                    Location = b.Room.Location,
+                    Start = b.Start,
+                    EndTime = b.EndTime,
+                    Status = b.Status.ToString()
+                })
+                .ToListAsync();
+
+            var response = new PagedResponseDto<BookingSummaryDto>
+            {
+                TotalCount = totalCount,
+                PageNumber = page,
+                PageSize = pageSize,
+                Results = bookings
+            };
+
+            return Ok(response);
+        }
+
+
+
+
+
+   
     }
 
 

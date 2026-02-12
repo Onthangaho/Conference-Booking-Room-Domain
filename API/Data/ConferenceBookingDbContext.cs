@@ -9,7 +9,7 @@ public class ConferenceBookingDbContext : IdentityDbContext<ApplicationUser, Ide
     public ConferenceBookingDbContext(DbContextOptions<ConferenceBookingDbContext> options) : base(options)
     {
     }
-   
+
     public DbSet<ConferenceRoom> ConferenceRooms { get; set; }
     public DbSet<Booking> Bookings { get; set; }
     public DbSet<Session> Sessions { get; set; }
@@ -30,14 +30,14 @@ public class ConferenceBookingDbContext : IdentityDbContext<ApplicationUser, Ide
         .HasData(
             new Session
             {
-                Id=1,
-                Title="Daily Standup",
-                Capacity=10,
-                Start=DateTime.UtcNow.AddDays(2),
-                End=DateTime.UtcNow.AddDays(2).AddHours(1)
+                Id = 1,
+                Title = "Daily Standup",
+                Capacity = 10,
+                Start = DateTime.UtcNow.AddDays(2),
+                End = DateTime.UtcNow.AddDays(2).AddHours(1)
             }
         );
-        
+
         // Configure the relationship between Booking and ConferenceRoom
         modelBuilder.Entity<Booking>()
         .HasOne(b => b.Room)
@@ -52,8 +52,14 @@ public class ConferenceBookingDbContext : IdentityDbContext<ApplicationUser, Ide
         .Property(b => b.Status)
         .HasDefaultValue(BookingStatus.Pending);
 
-        
-         
+        // Default value for CreatedAt
+        modelBuilder.Entity<Booking>()
+            .Property(b => b.CreatedAt)
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
+
+
+
+
     }
 
 }

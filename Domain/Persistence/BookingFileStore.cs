@@ -1,6 +1,6 @@
 using System.Text.Json;
 using ConferenceBookingRoomDomain;
-public class BookingFireStore : IBookingStore
+/*public class BookingFireStore : IBookingStore
 {
 
     private readonly string _filePath;
@@ -19,7 +19,7 @@ public class BookingFireStore : IBookingStore
 
     }*/
 
-    public async Task<List<Booking>> LoadBookingAsync()
+   /* public async Task<List<Booking>> LoadBookingAsync()
     {
 
         if (!File.Exists(_filePath))
@@ -38,4 +38,4 @@ public class BookingFireStore : IBookingStore
         return File.WriteAllTextAsync(_filePath, json);
 
     }
-}
+}*/
