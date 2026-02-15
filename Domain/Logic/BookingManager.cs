@@ -66,17 +66,19 @@ namespace ConferenceBookingRoomDomain
             }
             //it checks if the room is already booked for the requested time slot
             var bookings = await _bookingStore.LoadBookingAsync();
-            bool overlaps = bookings.Any(b => b.Room == request.Room &&
-            b.Status == BookingStatus.Confirmed &&
-            request.Start < b.EndTime && request.EndTime > b.Start);
+            bool overlaps= bookings.Any(b =>
+                b.RoomId == request.Room.Id &&
+                b.Status == BookingStatus.Confirmed &&
+                request.Start < b.EndTime &&
+                request.EndTime > b.Start);
 
             if (overlaps)
             {
                 throw new BookingConflictException();
             }
-            Booking booking = new Booking(request.Room, request.Start, request.EndTime)
+            Booking booking = new Booking(request.Room.Id, request.UserId, request.Start, request.EndTime)
             {
-                Id = GenerateBookingId(bookings),
+                
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -121,8 +123,8 @@ namespace ConferenceBookingRoomDomain
             {
                 throw new BookingDeleteConflictException(id);
             }
-            bookings.Remove(booking);
-            await _bookingStore.DeleteAsync(booking);
+            booking.Delete();
+            await _bookingStore.UpdateAsync(booking);
 
             return true;
         }
@@ -141,8 +143,8 @@ namespace ConferenceBookingRoomDomain
         }
         public async Task<Booking?> GetBookingById(int id)
         {
-            var bookings = await _bookingStore.LoadBookingAsync();
-            return bookings.FirstOrDefault(b => b.Id == id);
+            var booking = await _bookingStore.LoadBookingAsync();
+            return booking.FirstOrDefault(b => b.Id == id && !b.IsDeleted);
         }
 
 

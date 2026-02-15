@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using ConferenceBookingRoomDomain.Domain;
 
 
 [ApiController]
