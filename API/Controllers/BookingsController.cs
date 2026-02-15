@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using ConferenceBookingRoomDomain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -81,10 +82,28 @@ namespace ConferenceBookingRoomAPI.Controllers
                     Category = "BusinessRuleViolation"
                 });
             }
-            var bookinRequest = new BookingRequest(room, dtoBookingRequest.Start, dtoBookingRequest.EndTime);
+            var userId= User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if(string.IsNullOrEmpty(userId))
+            {
+                return BadRequest(new ErrorResponseDto
+                {
+                    ErrorCode = "USER_NOT_FOUND",
+                    Message = "Unable to identify the user making the booking request.",
+                    Category = "AuthenticationError"
+                });
+            }
+            var userExists = await _dbContext.Users.AnyAsync(u => u.Id == userId);
+            if (!userExists)            {
+                return BadRequest(new ErrorResponseDto
+                {
+                    ErrorCode = "USER_NOT_FOUND",
+                    Message = "The user making the booking request does not exist in the system.",
+                    Category = "AuthenticationError"
+                });
+            }
+            var bookinRequest = new BookingRequest(room, userId, dtoBookingRequest.Start, dtoBookingRequest.EndTime);
             var booking = await _bookingManager.CreateBooking(bookinRequest);
-            string createdBy = User.IsInRole("Receptionist") ? "Receptionist"
-            : User.Identity?.Name ?? "Unknown User";
+           
 
 
             // Map to Response DTO so we don't expose internal domain model directly
@@ -97,7 +116,8 @@ namespace ConferenceBookingRoomAPI.Controllers
                 Start = booking.Start,
                 EndTime = booking.EndTime,
                 Status = booking.Status.ToString(),
-                CreatedBy = createdBy
+                CreatedAt = booking.CreatedAt,
+                CreatedBy = User.Identity?.Name ?? "Unknown User",
             };
             return Ok(bookingResponse);
         }
