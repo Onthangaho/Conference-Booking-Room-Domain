@@ -12,6 +12,9 @@ public class Booking
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? CancelledAt { get; set; }
 
+    public string UserId { get; set; }
+    public ApplicationUSer User { get; set; }
+
     
 
     public Booking()
