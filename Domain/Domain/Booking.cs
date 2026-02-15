@@ -18,6 +18,9 @@ public class Booking
     public string UserId { get; set; } =string.Empty;
     public ApplicationUser User { get; set; } = null!;
 
+    public bool IsDeleted { get; set; } = false;
+    public DateTime? DeletedAt { get; set; }
+
     
 
     public Booking()
@@ -60,6 +63,12 @@ public class Booking
 
 
     }
+   public void Delete()
+    {
+        IsDeleted = true;
+        DeletedAt = DateTime.UtcNow;
+    }
+
 
 
 }
