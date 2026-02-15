@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using ConferenceBookingRoomDomain.Domain;
 
 
 
@@ -25,7 +26,10 @@ public class ConferenceBookingDbContext : IdentityDbContext<ApplicationUser, Ide
         //Conference entity rules so that it can be used in the booking entity
         modelBuilder.Entity<ConferenceRoom>()
         .HasKey(c => c.Id);
+       
 
+       
+       
         modelBuilder.Entity<Session>()
         .HasData(
             new Session
@@ -37,12 +41,19 @@ public class ConferenceBookingDbContext : IdentityDbContext<ApplicationUser, Ide
                 End = DateTime.UtcNow.AddDays(2).AddHours(1)
             }
         );
-
+        // Configure the relationship between Booking and ApplicationUser
+        modelBuilder.Entity<Booking>()
+        .HasOne(b => b.User)
+        .WithMany()
+        .HasForeignKey(b => b.UserId)
+        .OnDelete(DeleteBehavior.Restrict);
         // Configure the relationship between Booking and ConferenceRoom
         modelBuilder.Entity<Booking>()
         .HasOne(b => b.Room)
-        .WithMany()
-        .OnDelete(DeleteBehavior.Cascade);
+        .WithMany(r => r.Bookings)
+        .HasForeignKey(b => b.RoomId)
+        .OnDelete(DeleteBehavior.Restrict);
+        
         // Set default value for IsActive property in ConferenceRoom
         modelBuilder.Entity<ConferenceRoom>()
         .Property(c => c.IsActive)
