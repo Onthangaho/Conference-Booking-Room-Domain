@@ -15,8 +15,8 @@ public class Booking
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? CancelledAt { get; set; }
 
-    public string UserId { get; set; } =string.Empty;
-    public ApplicationUser User { get; set; } = null!;
+    public string? UserId { get; set; } 
+    public ApplicationUser? User { get; set; } = null!;
 
     public bool IsDeleted { get; set; } = false;
     public DateTime? DeletedAt { get; set; }
