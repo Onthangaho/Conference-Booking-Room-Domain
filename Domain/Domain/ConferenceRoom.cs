@@ -8,7 +8,11 @@ public class ConferenceRoom
     public int Capacity { get; set; }
 
     public string Location { get; set; } = string.Empty;
+    
     public bool IsActive { get; set; } = true;
+    public DateTime? DeletedAt { get; set; }
+
+    public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
 
     public ConferenceRoom()
     {
@@ -35,13 +39,18 @@ public class ConferenceRoom
         RoomType = type;
         Capacity = capacity;
         Location = location;
-        IsActive = isActive;
+       
     }
 
   
     public IReadOnlyList<Booking> GetBookings()
     {
         return _bookings.AsReadOnly();
+    }
+    public void Deactivate()
+    {
+        IsActive = false;
+        DeletedAt = DateTime.UtcNow;
     }
 
     
