@@ -5,7 +5,7 @@ using ConferenceBookingRoomDomain.Domain;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AuthController : ControllerBase
+public class AuthController : ControllerBase// This controller handles user authentication and JWT token generation
 {
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly IJwtTokenService _jwtTokenService;
