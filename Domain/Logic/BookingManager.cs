@@ -15,22 +15,22 @@ namespace ConferenceBookingRoomDomain
         //Properties 
         private readonly IBookingStore _bookingStore;
         private readonly IRoomStore _roomStore;
-        
-       
+
+
 
         public BookingManager(IBookingStore bookingStore, IRoomStore roomStore)
         {
             _bookingStore = bookingStore;
             _roomStore = roomStore;
 
-          
 
-            
+
+
         }
 
 
-// Helper method to generate unique booking IDs if not using a database auto-increment
-        private int GenerateBookingId( IReadOnlyList<Booking> bookings)
+        // Helper method to generate unique booking IDs if not using a database auto-increment
+        private int GenerateBookingId(IReadOnlyList<Booking> bookings)
         {
             if (bookings.Count == 0)
             {
@@ -47,14 +47,14 @@ namespace ConferenceBookingRoomDomain
 
         public async Task<Booking> CreateBooking(BookingRequest request)
         {
-            
+
 
             //Guard Clauses
             if (string.IsNullOrEmpty(request.UserId))
             {
                 throw new Exception("User ID cannot be null or empty");
             }
-           
+
 
             if (request.Start >= request.EndTime)
             {
@@ -67,7 +67,7 @@ namespace ConferenceBookingRoomDomain
             }
             //it checks if the room is already booked for the requested time slot
             var bookings = await _bookingStore.LoadBookingAsync();
-            bool overlaps= bookings.Any(b =>
+            bool overlaps = bookings.Any(b =>
                 b.RoomId == request.RoomId &&
                 b.Status == BookingStatus.Confirmed &&
                 request.Start < b.EndTime &&
@@ -77,14 +77,14 @@ namespace ConferenceBookingRoomDomain
             {
                 throw new BookingConflictException();
             }
-            Booking booking = new Booking(request.RoomId, request.UserId, request.Start, request.EndTime)
-            {
-                Room = room,
-                CreatedAt = DateTime.UtcNow
-            };
-
+            Booking booking = new Booking(
+                           request.RoomId,
+                           request.UserId,
+                           request.Start,
+                           request.EndTime
+                         );
             booking.Confirm();
-            
+
 
             await _bookingStore.SaveAsync(booking);
 
@@ -123,7 +123,7 @@ namespace ConferenceBookingRoomDomain
             if (booking!.Status != BookingStatus.Cancelled)
             {
                 throw new BookingDeleteConflictException(id);
-            } 
+            }
             booking.Delete();
             await _bookingStore.UpdateAsync(booking);
 
@@ -186,9 +186,9 @@ namespace ConferenceBookingRoomDomain
          */
         public async Task<Dictionary<BookingStatus, List<Booking>>> GroupBookingsByStatus()
         {
-         var bookings = await _bookingStore.LoadBookingAsync();
-         var grouped = bookings.GroupBy(b => b.Status)
-            .ToDictionary(g => g.Key, g => g.ToList());
+            var bookings = await _bookingStore.LoadBookingAsync();
+            var grouped = bookings.GroupBy(b => b.Status)
+               .ToDictionary(g => g.Key, g => g.ToList());
             return grouped;
         }
 

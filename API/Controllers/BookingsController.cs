@@ -103,6 +103,22 @@ namespace ConferenceBookingRoomAPI.Controllers
             }
             var bookinRequest = new BookingRequest(dtoBookingRequest.RoomId, userId, dtoBookingRequest.Start, dtoBookingRequest.EndTime);
             var booking = await _bookingManager.CreateBooking(bookinRequest);
+
+            var savedBooking = await _dbContext.Bookings
+                .Include(b => b.Room)
+                .Include(b => b.User)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(b => b.Id == booking.Id);
+
+                if (savedBooking == null)
+                {
+                    return NotFound(new ErrorResponseDto
+                    {
+                        ErrorCode = "BOOKING_NOT_FOUND",
+                        Message = $"Booking with ID '{booking.Id}' was not found after creation.",
+                        Category = "NotFound"
+                    });
+                }
            
 
 
@@ -110,13 +126,13 @@ namespace ConferenceBookingRoomAPI.Controllers
             var bookingResponse = new BookingResponseDto
             {
                 Id = booking.Id,
-                RoomName = booking.Room.Name,
-                RoomType = booking.Room.RoomType.ToString(),
-                Capacity = booking.Room.Capacity,
-                Start = booking.Start,
-                EndTime = booking.EndTime,
-                Status = booking.Status.ToString(),
-                CreatedAt = booking.CreatedAt,
+                RoomName = savedBooking.Room.Name,
+                RoomType = savedBooking.Room.RoomType.ToString(),
+                Capacity = savedBooking.Room.Capacity,
+                Start = savedBooking.Start,
+                EndTime = savedBooking.EndTime,
+                Status = savedBooking.Status.ToString(),
+                CreatedAt = savedBooking.CreatedAt,
                 CreatedBy = User.Identity?.Name ?? "Unknown User",
             };
             return Ok(bookingResponse);
