@@ -106,7 +106,7 @@ using (var scope = app.Services.CreateScope())
     var dbContext = scope.ServiceProvider.GetRequiredService<ConferenceBookingDbContext>();
     await dbContext.Database.EnsureCreatedAsync(); // Ensure the database is created before seeding
     await DataSeeder.SeedRolesAndUserAsync(scope.ServiceProvider);
-    await ConferenceRoomSeeder.SeedRoomsAsync(dbContext);
+    //await ConferenceRoomSeeder.SeedRoomsAsync(dbContext);
 }
 app.UseAuthentication();
 app.UseAuthorization();
