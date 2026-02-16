@@ -50,24 +50,25 @@ namespace ConferenceBookingRoomDomain
             
 
             //Guard Clauses
-            if (request.Room == null)
+            if (string.IsNullOrEmpty(request.UserId))
             {
-                throw new Exception("Room cannot be null");
+                throw new Exception("User ID cannot be null or empty");
             }
+           
 
             if (request.Start >= request.EndTime)
             {
                 throw new InvalidBookingTimeException(request.Start, request.EndTime);
             }
-            var room = await _roomStore.LoadRoomByIdAsync(request.Room.Id);
+            var room = await _roomStore.LoadRoomByIdAsync(request.RoomId);
             if (room == null)
             {
-                throw new Exception($"Room with ID {request.Room.Id} not found.");
+                throw new Exception($"Room with ID {request.RoomId} not found.");
             }
             //it checks if the room is already booked for the requested time slot
             var bookings = await _bookingStore.LoadBookingAsync();
             bool overlaps= bookings.Any(b =>
-                b.RoomId == request.Room.Id &&
+                b.RoomId == request.RoomId &&
                 b.Status == BookingStatus.Confirmed &&
                 request.Start < b.EndTime &&
                 request.EndTime > b.Start);
@@ -76,9 +77,9 @@ namespace ConferenceBookingRoomDomain
             {
                 throw new BookingConflictException();
             }
-            Booking booking = new Booking(request.Room.Id, request.UserId, request.Start, request.EndTime)
+            Booking booking = new Booking(request.RoomId, request.UserId, request.Start, request.EndTime)
             {
-                
+                Room = room,
                 CreatedAt = DateTime.UtcNow
             };
 
@@ -122,7 +123,7 @@ namespace ConferenceBookingRoomDomain
             if (booking!.Status != BookingStatus.Cancelled)
             {
                 throw new BookingDeleteConflictException(id);
-            }
+            } 
             booking.Delete();
             await _bookingStore.UpdateAsync(booking);
 

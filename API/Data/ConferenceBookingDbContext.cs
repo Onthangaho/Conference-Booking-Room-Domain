@@ -46,6 +46,7 @@ public class ConferenceBookingDbContext : IdentityDbContext<ApplicationUser, Ide
         .HasOne(b => b.User)
         .WithMany()
         .HasForeignKey(b => b.UserId)
+        //this is to prevent cascading deletes when a user is deleted, so that the booking records are not automatically deleted when a user is removed from the system.
         .OnDelete(DeleteBehavior.Restrict);
         // Configure the relationship between Booking and ConferenceRoom
         modelBuilder.Entity<Booking>()

@@ -16,7 +16,7 @@ public class Booking
     public DateTime? CancelledAt { get; set; }
 
     public string? UserId { get; set; } 
-    public ApplicationUser? User { get; set; } = null!;
+    public ApplicationUser User { get; set; } = null!;
 
     public bool IsDeleted { get; set; } = false;
     public DateTime? DeletedAt { get; set; }
@@ -35,7 +35,7 @@ public class Booking
 
         // Id = Guid.NewGuid();
        
-         RoomId = roomId;
+        RoomId = roomId;
         UserId = userId;
         Start = start;
         EndTime = endTime;

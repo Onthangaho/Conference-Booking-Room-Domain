@@ -2,15 +2,15 @@ namespace ConferenceBookingRoomDomain
 {
     public record BookingRequest
     {
-        public ConferenceRoom Room { get; }
+        public int RoomId { get; }
         public string UserId { get; }
         public DateTime Start { get; }
 
         public DateTime EndTime { get; }
 
-  public BookingRequest( ConferenceRoom room, string userId, DateTime start, DateTime endTime)
+  public BookingRequest(int roomId, string userId, DateTime start, DateTime endTime)
         {
-            Room = room;
+            RoomId = roomId;
             UserId = userId;
             Start = start;
             EndTime = endTime;

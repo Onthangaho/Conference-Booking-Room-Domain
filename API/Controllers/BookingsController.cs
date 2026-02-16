@@ -101,7 +101,7 @@ namespace ConferenceBookingRoomAPI.Controllers
                     Category = "AuthenticationError"
                 });
             }
-            var bookinRequest = new BookingRequest(room, userId, dtoBookingRequest.Start, dtoBookingRequest.EndTime);
+            var bookinRequest = new BookingRequest(dtoBookingRequest.RoomId, userId, dtoBookingRequest.Start, dtoBookingRequest.EndTime);
             var booking = await _bookingManager.CreateBooking(bookinRequest);
            
 
