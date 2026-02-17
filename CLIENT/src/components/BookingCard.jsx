@@ -16,8 +16,8 @@ function BookingCard({roomName,roomType,Location,date,startTime,endTime,userName
 
             <div className="card-actions">
 
-                <Button label="Edit"/>
-                <Button id="cancel-btn" label="Cancel"/>
+                <Button label="Edit" variant="primary"/>
+                <Button label="Cancel" variant="danger"/>
 
             </div>
             
