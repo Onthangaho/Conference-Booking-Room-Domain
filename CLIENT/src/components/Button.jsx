@@ -1,7 +1,9 @@
-function Button({label, onClick}) {
+//this is a reusable button component that can be used throughout the application. It accepts a label, an onClick handler, and a variant for styling.
+
+function Button({label, onClick, variant = "primary"}) {
 
     return (
-        <button className="btn" onClick={onClick}>
+        <button className={`btn ${variant}`} onClick={onClick}>
             {label}
             </button>
     );
