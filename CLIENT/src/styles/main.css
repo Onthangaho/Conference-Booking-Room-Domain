@@ -23,6 +23,7 @@ body{
 
 .container {
    padding: 2rem;
+   margin-bottom: 3rem; /* To ensure content is not hidden behind the fixed footer */
 }
 
 .bookings-list{
@@ -48,14 +49,22 @@ body{
     padding: 0.5rem 1rem;
     border: none;
     border-radius: 4px;
-    background: #2563eb;
+    
     color: #fff;
     cursor: pointer;
 }
+.btn.danger {
+    background-color: #e53e3e;
+}
+.btn.danger:hover {
+    background-color: #c53030;
+}
 
-.btn:hover {
-
-    background: #1e40af;
+.btn.primary {
+    background-color: #3182ce;
+}
+.btn.primary:hover {
+    background-color: #2b6cb0;
 }
 
 .footer {
