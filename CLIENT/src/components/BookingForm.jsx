@@ -25,6 +25,46 @@ function BookingForm({ addBooking }) {
         if (!date) newErrors.date = "Date is required";
         if (!startTime) newErrors.startTime = "Start Time is required";
         if (!endTime) newErrors.endTime = "End Time is required";
+
+        if (startTime && endTime && endTime <= startTime) {
+            newErrors.endTime = "End time must be later than start time";
+        }
+        // Check if date is in the past
+        if (date && new Date(date) < new Date().setHours(0, 0, 0, 0)) {
+            newErrors.date = "Date cannot be in the past";
+        }
+
+        // Booking duration must be reasonable (max 8 hours)
+        if (date && startTime && endTime) {
+            const start = new Date(`${date}T${startTime}`);
+            const end = new Date(`${date}T${endTime}`);
+            const diffHours = (end - start) / (1000 * 60 * 60);
+
+            if (diffHours > 8) {
+                newErrors.endTime = "Booking cannot exceed 8 hours";
+            }
+        }
+
+        // User name validation (letters only, min 2 chars)
+        if (userName && !/^[A-Za-z\s]{2,}$/.test(userName)) {
+            newErrors.userName = "Enter a valid name (letters only)";
+        }
+
+
+        //Room availability check if you track bookings
+        const overlap = bookings.some(b =>
+            b.roomName === roomName &&
+            b.date === date &&
+            !(endTime <= b.startTime || startTime >= b.endTime)
+        );
+        if (overlap) {
+            newErrors.roomName = "This room is already booked for the selected time";
+        }
+
+
+
+
+
         setErrors(newErrors);
 
         if (Object.keys(newErrors).length > 0) {
