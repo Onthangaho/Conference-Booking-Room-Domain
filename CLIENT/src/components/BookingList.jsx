@@ -1,14 +1,14 @@
 
 import BookingCard from "./BookingCard";
-import { bookings } from "../data/mockData";
 
 
-function BookingList(){
+
+function BookingList({ bookings, deleteBooking }) {
 
     return(
         <div className="bookings-list">
             {bookings.map((booking) => (
-                <BookingCard key={booking.id} booking={booking} />
+                <BookingCard key={booking.id} booking={booking} deleteBooking={deleteBooking}/> 
             ))}
         </div>
     )
