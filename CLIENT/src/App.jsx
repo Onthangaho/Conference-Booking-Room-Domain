@@ -4,6 +4,8 @@ import BookingCard from "./components/BookingCard";
 import { bookings } from "./data/mockData";
 import "./styles/main.css";
 import Navbar from "./components/Navbar";
+import Heading from "./components/Heading";
+import BookingList from "./components/BookingList";
 
 function App() {
   
@@ -15,22 +17,10 @@ function App() {
 
       <main className="container">
 
-        <h1>Upcoming Bookings</h1>
-        
-        <div className="bookings-list">
-          {bookings.map((booking) => (
-            <BookingCard 
-              key={booking.id}
-              roomName={booking.roomName}
-              roomType={booking.roomType}
-              Location={booking.Location}
-              date={booking.date}
-              startTime={booking.startTime}
-              endTime={booking.endTime}
-              userName={booking.userName}
-            />
-          ))}
-        </div>
+        <Heading title="Conference Room Bookings" />
+
+        <BookingList />
+       
         
       </main>
 

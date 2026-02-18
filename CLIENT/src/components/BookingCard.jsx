@@ -1,17 +1,17 @@
 import Button from "./Button";
 
-function BookingCard({roomName,roomType,Location,date,startTime,endTime,userName}) {
+function BookingCard({booking}) {
 
 
     return (
 
         <div className="booking-card">
-            <h3>{roomName}</h3>
-            <p><strong>Type:</strong> {roomType}</p>
-            <p><strong>Location:</strong> {Location}</p>
-            <p><strong>Date:</strong> {date}</p>
-            <p><strong>Time:</strong> {startTime} - {endTime}</p>
-            <p><strong>User:</strong> {userName}</p>
+            <h3>{booking.roomName}</h3>
+            <p><strong>Type:</strong> {booking.roomType}</p>
+            <p><strong>Location:</strong> {booking.location}</p>
+            <p><strong>Date:</strong> {booking.date}</p>
+            <p><strong>Time:</strong> {booking.startTime} - {booking.endTime}</p>
+            <p><strong>User:</strong> {booking.userName}</p>
 
 
             <div className="card-actions">
