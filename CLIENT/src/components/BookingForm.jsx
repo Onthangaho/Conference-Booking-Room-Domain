@@ -2,7 +2,7 @@ import { useState } from "react";
 import Button from "./Button";
 
 
-function BookingForm({ addBooking }) {
+function BookingForm({ addBooking, bookings }) {
 
     const [roomName, setRoomName] = useState("");
     const [roomType, setRoomType] = useState("");
@@ -83,7 +83,6 @@ function BookingForm({ addBooking }) {
         };
 
         addBooking(newBooking);
-        alert("Booking added successfully!");
         handleClear();
 
 
