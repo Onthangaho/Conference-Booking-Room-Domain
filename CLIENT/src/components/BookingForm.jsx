@@ -31,6 +31,8 @@ function BookingForm({ addBooking }) {
         };
 
         addBooking(newBooking);
+        alert("Booking added successfully!");
+
 
         // Clear form fields after submission
         setRoomName("");
@@ -52,24 +54,41 @@ function BookingForm({ addBooking }) {
         setEndTime("");
     };
 
-    return(
+    return (
 
-         <form onSubmit={handleSubmit} className="booking-form">
+        <form onSubmit={handleSubmit} className="booking-form">
 
-      <input value={roomName} onChange={(e) => setRoomName(e.target.value)} placeholder="Room Name" />
-      <input value={roomType} onChange={(e) => setRoomType(e.target.value)} placeholder="Room Type" />
-      <input value={location} onChange={(e) => setLocation(e.target.value)} placeholder="Location" />
-      <input value={userName} onChange={(e) => setUserName(e.target.value)} placeholder="User Name" />
-      <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-      <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
-      <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+            <input value={roomName} onChange={(e) => setRoomName(e.target.value)} placeholder="Room Name" />
+            <select value={roomType} onChange={(e) => setRoomType(e.target.value)}>
+                <option value="">Select Room Type</option>
+                <option value="Training">Training</option>
+                <option value="Boardroom">Boardroom</option>
+                <option value="Standard">Standard</option>
+            </select>
 
-      <div className="form-actions">
-        <Button label="Add Booking" variant="primary" />
-        <Button label="Clear" variant="danger" onClick={handleClear} />
-      </div>
+            <select value={location} onChange={(e) => setLocation(e.target.value)}>
+                <option value="">Select Location</option>
+                <option value="Bloemfontein">Bloemfontein</option>
+                <option value="Cape Town">Cape Town</option>
+            </select>
+            <input value={userName} onChange={(e) => setUserName(e.target.value)} placeholder="User Name" />
+            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+            <input type="time" value={startTime} onChange={(e) => setStartTime(e.target.value)} />
+            <input type="time" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
 
-    </form>
+            <div className="form-actions">
+                <button type="submit" className="btn primary">Add Booking</button>
+
+                <Button
+                    label="Clear"
+                    variant="danger"
+                    onClick={handleClear}
+                    type="button"
+                />
+
+            </div>
+
+        </form>
     );
 }
 
