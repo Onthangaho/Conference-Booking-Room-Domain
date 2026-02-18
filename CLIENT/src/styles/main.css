@@ -95,6 +95,8 @@ body{
 }
 
 .booking-form input, .booking-form select {
+    width: 100%;
+    box-sizing: border-box;
     padding: 0.6rem;
     border: 1px solid #ccc;
     border-radius: 6px;
@@ -111,3 +113,13 @@ body{
     gap: 0.8rem;
     
 } 
+.error-text {
+  color: #e53e3e;   /* red */
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+.input-error {
+  border: 1px solid #e53e3e;
+  background-color: #fff5f5; /* light red background */
+}
