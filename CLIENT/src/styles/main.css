@@ -83,3 +83,31 @@ body{
     
     bottom: 0
 }
+
+.booking-form {
+    background-color: #fff;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    margin-bottom: 2rem;
+    display: grid;
+    gap: 1rem;
+}
+
+.booking-form input, .booking-form select {
+    padding: 0.6rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 0.95rem;
+}
+.booking-form input:focus{
+    border-color: #3182ce;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(49,130,206,0.3);
+}
+
+.form-actions {
+    display: flex;
+    gap: 0.8rem;
+    
+} 
