@@ -123,3 +123,8 @@ body{
   border: 1px solid #e53e3e;
   background-color: #fff5f5; /* light red background */
 }
+.counter {
+    font-size: 1.2rem;
+    margin-top: 1rem;
+    color: #333;
+}
