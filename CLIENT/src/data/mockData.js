@@ -10,45 +10,17 @@ export const bookings = [
         startTime: '10:00',
         endTime: '11:00',
         userName: 'John Doe'
-    },
-    {
-        id: 2,
-        roomName: 'Conference Room B',
-        roomType: 'Boardroom',
-        location: 'Bloemfontein',
-        date: '2026-02-24',
-        startTime: '14:00',
-        endTime: '15:00',
-        userName: 'Jane Smith'
-    },
-    {
-        id: 3,
-        roomName: 'Conference Room C',
-        roomType: 'Training',
-        location: 'Cape Town',
-        date: '2026-02-25',
-        startTime: '09:00',
-        endTime: '10:00',
-        userName: 'Alice Johnson'
-    },
-    {
-        id: 4,
-        roomName: 'Conference Room D',
-        roomType: 'Standard',
-        location: 'Bloemfontein',
-        date: '2026-02-26',
-        startTime: '13:00',
-        endTime: '14:00',
-        userName: 'Bob Brown'
-    },
-    {
-        id: 5,
-        roomName: 'Conference Room E',
-        roomType: 'Boardroom',
-        location: 'Cape Town',
-        date: '2026-02-27',
-        startTime: '15:00',
-        endTime: '16:00',
-        userName: 'Charlie Davis'
     }
+    
 ]
+// Function to get initial bookings, checking localStorage first and falling back to mock data if not found
+export const getInitialBookings = () => {
+
+    const storedBookings = localStorage.getItem('bookings');
+    return storedBookings ? JSON.parse(storedBookings) : bookings;
+}
+
+
+export const resetBookings = () => {
+    localStorage.removeItem('bookings');
+}

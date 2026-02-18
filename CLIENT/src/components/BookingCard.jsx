@@ -1,10 +1,7 @@
 import Button from "./Button";
 
-function BookingCard({booking}) {
-
-
+function BookingCard({ booking, deleteBooking }) {
     return (
-
         <div className="booking-card">
             <h3>{booking.roomName}</h3>
             <p><strong>Type:</strong> {booking.roomType}</p>
@@ -13,16 +10,21 @@ function BookingCard({booking}) {
             <p><strong>Time:</strong> {booking.startTime} - {booking.endTime}</p>
             <p><strong>User:</strong> {booking.userName}</p>
 
-
             <div className="card-actions">
-
-                <Button label="Edit" variant="primary"/>
-                <Button label="Cancel" variant="danger"/>
-
+                <Button label="Edit" variant="primary" />
+                <Button
+                    label="Cancel"
+                    variant="danger"
+                    onClick={() => {
+                        if (window.confirm("Are you sure you want to delete this booking?")) {
+                            deleteBooking(booking.id);
+                            alert("Booking deleted successfully!");
+                        }
+                    }}
+                />
             </div>
-            
         </div>
-    )
-
+    );
 }
+
 export default BookingCard;
