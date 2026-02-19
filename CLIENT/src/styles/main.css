@@ -123,3 +123,48 @@ body{
   border: 1px solid #e53e3e;
   background-color: #fff5f5; /* light red background */
 }
+.counter {
+    font-size: 1.2rem;
+    margin-top: 1rem;
+    color: #333;
+}
+
+.filter-section {
+  margin: 1rem 0;
+}
+
+.filter-section label {
+  margin-right: 0.5rem;
+  font-weight: bold;
+}
+.no-bookings {
+  margin-top: 1rem;
+  font-style: italic;
+  color: #666;
+  text-align: center;
+}
+
+.retry-button {
+  background-color: #3498db;   /* blue */
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.retry-button:hover {
+  background-color: #2980b9;   /* darker blue on hover */
+}
+
+.error-state {
+  margin: 1rem 0;
+  padding: 1rem;
+  border: 1px solid #e74c3c;
+  background-color: #fdecea;
+  color: #c0392b;
+  border-radius: 4px;
+  text-align: center;
+}
