@@ -46,7 +46,11 @@ namespace ConferenceBookingRoomAPI.Controllers
                 EndTime = b.EndTime,
                 Status = b.Status.ToString(),
                 CreatedAt = b.CreatedAt,
-                CancelledAt = b.CancelledAt
+                CreatedBy = b.User?.UserName ?? "Unknown User",
+                CancelledAt = b.CancelledAt.HasValue
+                ? b.CancelledAt.Value.ToString("yyyy-MM-dd HH:mm")
+                 : "Not Cancelled",
+                IsCancelled = b.CancelledAt.HasValue  
 
             }).ToList();
             return Ok(response);
@@ -82,8 +86,8 @@ namespace ConferenceBookingRoomAPI.Controllers
                     Category = "BusinessRuleViolation"
                 });
             }
-            var userId= User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if(string.IsNullOrEmpty(userId))
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
             {
                 return BadRequest(new ErrorResponseDto
                 {
@@ -93,7 +97,8 @@ namespace ConferenceBookingRoomAPI.Controllers
                 });
             }
             var userExists = await _dbContext.Users.AnyAsync(u => u.Id == userId);
-            if (!userExists)            {
+            if (!userExists)
+            {
                 return BadRequest(new ErrorResponseDto
                 {
                     ErrorCode = "USER_NOT_FOUND",
@@ -110,16 +115,16 @@ namespace ConferenceBookingRoomAPI.Controllers
                 .AsNoTracking()
                 .FirstOrDefaultAsync(b => b.Id == booking.Id);
 
-                if (savedBooking == null)
+            if (savedBooking == null)
+            {
+                return NotFound(new ErrorResponseDto
                 {
-                    return NotFound(new ErrorResponseDto
-                    {
-                        ErrorCode = "BOOKING_NOT_FOUND",
-                        Message = $"Booking with ID '{booking.Id}' was not found after creation.",
-                        Category = "NotFound"
-                    });
-                }
-           
+                    ErrorCode = "BOOKING_NOT_FOUND",
+                    Message = $"Booking with ID '{booking.Id}' was not found after creation.",
+                    Category = "NotFound"
+                });
+            }
+
 
 
             // Map to Response DTO so we don't expose internal domain model directly
@@ -188,7 +193,10 @@ namespace ConferenceBookingRoomAPI.Controllers
                 EndTime = booking.EndTime,
                 Status = booking.Status.ToString(),
                 CreatedAt = booking.CreatedAt,
-                CancelledAt = booking.CancelledAt
+                CancelledAt = booking.CancelledAt.HasValue
+                ? booking.CancelledAt.Value.ToString("yyyy-MM-dd HH:mm")
+                : "Not Cancelled",
+
             };
             return Ok(bookingResponse);
 
@@ -251,7 +259,7 @@ namespace ConferenceBookingRoomAPI.Controllers
             return Ok(bookings);
         }
 
-    
+
 
         [HttpGet("by-location/{location}")]
         //[Authorize(Roles = "Admin,Employee,Receptionist")]
@@ -271,15 +279,15 @@ namespace ConferenceBookingRoomAPI.Controllers
                     Status = b.Status.ToString()
                 })
                 .ToListAsync();
-                if (!bookings.Any())
+            if (!bookings.Any())
+            {
+                return NotFound(new ErrorResponseDto
                 {
-                    return NotFound(new ErrorResponseDto
-                    {
-                        ErrorCode = "NO_BOOKINGS_FOUND",
-                        Message = $"No bookings found for location '{location}'.",
-                        Category = "NotFound"
-                    });
-                }
+                    ErrorCode = "NO_BOOKINGS_FOUND",
+                    Message = $"No bookings found for location '{location}'.",
+                    Category = "NotFound"
+                });
+            }
 
             return Ok(bookings);
         }
@@ -301,20 +309,20 @@ namespace ConferenceBookingRoomAPI.Controllers
                 })
                 .ToListAsync();
 
-                if (!bookings.Any())
+            if (!bookings.Any())
+            {
+                return NotFound(new ErrorResponseDto
                 {
-                    return NotFound(new ErrorResponseDto
-                    {
-                        ErrorCode = "NO_BOOKINGS_FOUND",
-                        Message = $"No bookings found with status '{status}'.",
-                        Category = "NotFound"
-                    });
-                }
+                    ErrorCode = "NO_BOOKINGS_FOUND",
+                    Message = $"No bookings found with status '{status}'.",
+                    Category = "NotFound"
+                });
+            }
 
             return Ok(bookings);
         }
 
-           [HttpGet("sorted")]
+        [HttpGet("sorted")]
         //[Authorize(Roles = "Admin,Employee,Receptionist")]
         public async Task<IActionResult> GetSortedBookings(string sortBy = "date")
         {
@@ -389,7 +397,7 @@ namespace ConferenceBookingRoomAPI.Controllers
                 .Select(b => new BookingSummaryDto
                 {
                     Id = b.Id,
-                    Room= b.Room.Name,
+                    Room = b.Room.Name,
                     Location = b.Room.Location,
                     Start = b.Start,
                     EndTime = b.EndTime,
@@ -412,7 +420,7 @@ namespace ConferenceBookingRoomAPI.Controllers
 
 
 
-   
+
     }
 
 
