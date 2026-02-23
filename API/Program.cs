@@ -61,7 +61,7 @@ builder.Services.AddSwaggerGen(c =>
 });
 */
 builder.Services.AddDbContext<ConferenceBookingDbContext>(options =>
-options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Add Identity services so we can manage users and roles
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>()
