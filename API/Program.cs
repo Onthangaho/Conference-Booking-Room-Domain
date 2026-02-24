@@ -96,9 +96,21 @@ builder.Services.AddScoped<BookingManager>();
 
 
 builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+// Add CORS policy
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowReactApp", policy =>
+    {
+        policy.WithOrigins("http://localhost:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
+
 
 
 var app = builder.Build();
+app.UseCors("AllowReactApp"); // Enable CORS for the frontend policy
 
 // Seed initial data for users and roles
 using (var scope = app.Services.CreateScope())
@@ -110,6 +122,7 @@ using (var scope = app.Services.CreateScope())
 }
 app.UseAuthentication();
 app.UseAuthorization();
+
 // Add custom exception handling middleware to catch and handle exceptions globally in a consistent way, providing better error responses to clients and improving the overall robustness of the API.
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.MapControllers();
