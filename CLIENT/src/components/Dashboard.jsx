@@ -21,7 +21,7 @@ function Dashboard({ bookings, addBooking, deleteBooking }) {
       <p className="counter"><strong>Total Bookings: {filteredBookings.length}</strong></p>
 
       <Heading title="Add a New Booking" />
-      <BookingForm addBooking={addBooking} />
+     // <BookingForm addBooking={addBooking} />
 
       <div className="filter-section">
         <label htmlFor="category">Filter by Room Type:</label>

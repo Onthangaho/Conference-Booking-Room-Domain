@@ -31,7 +31,7 @@ namespace ConferenceBookingRoomAPI.Controllers
         }
 
         [HttpGet("all")]
-        [Authorize(Roles = "Admin")] // Only authenticated users with Admin or User roles can access this endpoint
+        //[Authorize(Roles = "Admin")] // Only authenticated users with Admin or User roles can access this endpoint
         public async Task<IActionResult> GetAll()
         {
             var bookings = await _bookingManager.GetAllBookings();
