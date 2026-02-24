@@ -1,21 +1,14 @@
-import { useEffect } from "react";
 import Heading from "./Heading";
+import ConnectionStatus from "./ConnectionStatus";
 
 function Header() {
-
-
-    useEffect(() => {
-        const intervalId = setInterval(() => {
-
-            console.log("Checking for updates...");
-        }, 3000); // Check every 3 seconds
-
-        return () => {
-            clearInterval(intervalId); // Clean up on unmount
-        };
-    },[]);
-
-    return null;
+  return (
+    <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <Heading text="Conference Booking Dashboard" />
+      <ConnectionStatus />
+    </header>
+  );
 }
 
 export default Header;
+

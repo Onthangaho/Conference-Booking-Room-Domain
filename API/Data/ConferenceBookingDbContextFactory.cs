@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
-public class ConferenceBookingDbContextFactoryConferenceBookingDbContextFactory : IDesignTimeDbContextFactory<ConferenceBookingDbContext>
+public class ConferenceBookingDbContextFactory : IDesignTimeDbContextFactory<ConferenceBookingDbContext>
 {
     public ConferenceBookingDbContext CreateDbContext(string[] args)
     {
@@ -10,7 +10,7 @@ public class ConferenceBookingDbContextFactoryConferenceBookingDbContextFactory 
             .AddJsonFile("appsettings.json")
             .Build();
         var optionsBuilder = new DbContextOptionsBuilder<ConferenceBookingDbContext>();
-        optionsBuilder.UseSqlite(configuration.GetConnectionString("DefaultConnection"));
+        optionsBuilder.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
 
         return new ConferenceBookingDbContext(optionsBuilder.Options);
     }

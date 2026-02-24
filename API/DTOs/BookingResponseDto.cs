@@ -9,6 +9,7 @@ public class BookingResponseDto
     public string? Status { get; set; }
 
     public DateTime CreatedAt { get; set; }
-    public DateTime? CancelledAt { get; set; }
+    public string? CancelledAt { get; set; }
     public string? CreatedBy { get; set; }
+    public bool IsCancelled { get; set; } 
 }

@@ -1,99 +1,50 @@
-import { useState, useEffect } from "react";
-import {
-  fetchAllBookings,
-  addBookingToService,
-  resetBookingsService
-} from "./services/bookingService";
-import Header from "./components/Header";
-import Footer from "./components/Footer";
-import "./styles/main.css";
 import Navbar from "./components/Navbar";
+import Header from "./components/Header";
 import Dashboard from "./components/Dashboard";
+import Footer from "./components/Footer";
 import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { useBookings } from "./hooks/useBookings";
+import { addBookingToService, deleteBookingService } from "./services/bookingService";
 
 function App() {
-  // State management for bookings, loading, and error handling
-  const [bookings, setBookings] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  // useBookings hook handles fetching, loading, error state
+  const { bookings, loading, error, setBookings } = useBookings();
 
-  // Load bookings from service
-  const loadBookings = async (controller) => {
-    setLoading(true);
-    setError(null);
+  const addBooking = async (newBooking) => {
     try {
-      const data = await fetchAllBookings(controller.signal);
-      setBookings(data);
-      toast.success("Data Sync Successful!");
+      const created = await addBookingToService(newBooking);
+      setBookings((prev) => [...prev, created]);
+      toast.success("Booking added successfully!");
     } catch (err) {
-      if (err.name !== "AbortError") {
-        setError(err.message);
-        toast.error(err.message);
-      }
-    } finally {
-      setLoading(false);
+      toast.error(err.message);
     }
   };
 
-  // Initial load with cleanup
-  useEffect(() => {
-    const controller = new AbortController();
-    loadBookings(controller);
-    return () => controller.abort();
-  }, []);
-
-  // Reset bookings to demo data
-  const handleReset = () => {
-    const reset = resetBookingsService();
-    setBookings(reset);
-    toast.info("Bookings reset to default demo data");
-  };
-
-  // Add booking via service
-  const addBooking = (newBooking) => {
-    const updated = addBookingToService({
-      ...newBooking,
-      id: Date.now(), // ensure unique ID
-    });
-    setBookings(updated);
-    toast.success("Booking added successfully!");
-  };
-
-  // Delete booking locally (optional: extend service to persist deletes)
-  const deleteBooking = (id) => {
-    const updated = bookings.filter((b) => b.id !== id);
-    setBookings(updated);
-    toast.success("Booking deleted successfully!");
+  const deleteBooking = async (id) => {
+    try {
+      const cancelled = await deleteBookingService(id);
+      setBookings((prev) =>
+        prev.map((b) => (b.id === id ? { ...b, ...cancelled } : b))
+      );
+      toast.success("Booking cancelled successfully!");
+    } catch (err) {
+      toast.error(err.message);
+    }
   };
 
   return (
     <>
       <Navbar />
-      <Header />
+      <Header /> {/* ✅ shows ConnectionStatus */}
 
-      {loading && bookings.length === 0 && <p>Loading bookings...</p>}
-      {loading && bookings.length > 0 && <p>Refreshing data...</p>}
-
-      {error && (
-        <div className="error-state">
-          <p>{error}</p>
-          <button
-            className="retry-button"
-            onClick={() => loadBookings(new AbortController())}
-          >
-            Retry
-          </button>
-
-        </div>
-      )}
+      {loading && <p>Loading bookings...</p>}
+      {error && <p style={{ color: "red" }}>Error: {error}</p>}
 
       {!loading && !error && (
         <Dashboard
           bookings={bookings}
           addBooking={addBooking}
           deleteBooking={deleteBooking}
-          handleReset={handleReset}
         />
       )}
 

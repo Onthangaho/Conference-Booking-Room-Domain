@@ -1,62 +1,54 @@
-// Simulated in-memory booking data store
-let bookingsStore = [
-  {
-    id: 1,
-    roomName: "Conference Room A",
-    roomType: "Standard",
-    location: "Cape Town",
-    date: "2026-02-24",
-    startTime: "09:00",
-    endTime: "11:00",
-    userName: "Onthangaho Magoro"
-  },
-  {
-    id: 2,
-    roomName: "Conference Room B",
-    roomType: "Boardroom",
-    location: "Bloemfontein",
-    date: "2026-02-25",
-    startTime: "14:00",
-    endTime: "16:00",
-    userName: "Pfano Sibei"
-  }
-];
+// src/services/bookingService.js
 
+// Fetch all bookings
 export async function fetchAllBookings(signal) {
-  return new Promise((resolve, reject) => {
-    const delay = Math.floor(Math.random() * (2500 - 500 + 1)) + 500;
-    const timer = setTimeout(() => {
-      if (signal?.aborted) {
-        clearTimeout(timer);
-        reject(new Error("Request aborted"));
-        return;
-      }
-      if (Math.random() < 0.2) {
-        reject(new Error("Server error: Failed to fetch bookings. Please try again."));
-      } else {
-        resolve([...bookingsStore]); // return current store
-      }
-    }, delay);
-  });
-}
-
-export function addBookingToService(newBooking) {
-  bookingsStore.push(newBooking);
-  return [...bookingsStore];
-}
-
-export function resetBookingsService() {
-  bookingsStore = [
-    {
-      id: Date.now(),
-      roomName: "Conference Room A",
-      roomType: "Training",
-      location: "Cape Town",
-      date: "2026-02-20",
-      startTime: "09:00",
-      endTime: "10:00",
-      userName: "Demo User"
+  const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/Bookings/all`, {
+    signal,
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("token")}`
     }
-  ];
-  return [...bookingsStore];
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch bookings: ${response.status} ${response.statusText}`);
+  }
+
+  return await response.json();
+}
+
+// Add a new booking
+export async function addBookingToService(newBooking) {
+  const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/Bookings`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("token")}`
+    },
+    body: JSON.stringify(newBooking)
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to add booking: ${response.status} ${response.statusText}`);
+  }
+
+  return await response.json();
+}
+
+// Cancel a booking
+export async function deleteBookingService(id) {
+  const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/Bookings/${id}/cancel`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${localStorage.getItem("token")}`
+    },
+    body: JSON.stringify({ id })
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to cancel booking: ${response.status} ${response.statusText}`);
+  }
+
+  return await response.json();
 }
