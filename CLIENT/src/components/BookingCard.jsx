@@ -1,6 +1,10 @@
 import Button from "./Button";
+import { useState } from "react";
+import ConfirmModal from "./ComfirmModal";
 
 function BookingCard({ booking, deleteBooking }) {
+
+  const [showConfirm, setShowConfirm] = useState(false);
   return (
     <div className="booking-card">
       <h3>{booking.roomName}</h3>
@@ -12,20 +16,30 @@ function BookingCard({ booking, deleteBooking }) {
       <p><strong>Created At:</strong> {new Date(booking.createdAt).toLocaleString()}</p>
 
       <p><strong>User:</strong> {booking.createdBy}</p>
-      <p><strong>Cancelled At:</strong> {booking.cancelledAt}</p>
+      
 
       <div className="card-actions">
         <Button label="Edit" variant="primary" />
         <Button
           label="Cancel"
           variant="danger"
-          onClick={() => {
-            if (window.confirm("Cancel this booking?")) {
-              deleteBooking(booking.id);
-            }
-          }}
+          onClick={() => setShowConfirm(true)}
         />
       </div>
+
+      {showConfirm && (
+        <ConfirmModal
+          message="Are you sure you want to cancel this booking?"
+          onConfirm={() => {
+            deleteBooking(booking.id);
+            setShowConfirm(false);
+          }}
+          onCancel={() => setShowConfirm(false)}
+        />
+      )}
+
+
+
     </div>
   );
 }

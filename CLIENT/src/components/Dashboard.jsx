@@ -1,12 +1,13 @@
 import Heading from "./Heading";
 import BookingList from "./BookingList";
 import BookingForm from "./BookingForm";
-import Button from "./Button";
 import { useState, useEffect } from "react";
+import { useBookings } from "../hooks/useBookings";
 
-function Dashboard({ bookings, addBooking, deleteBooking }) {
+function Dashboard() {
+  const { bookings, loading, error, addBooking, deleteBooking } = useBookings();
   const [category, setCategory] = useState("All");
-  const [filteredBookings, setFilteredBookings] = useState(bookings);
+  const [filteredBookings, setFilteredBookings] = useState([]);
 
   useEffect(() => {
     if (category === "All") {
@@ -16,16 +17,38 @@ function Dashboard({ bookings, addBooking, deleteBooking }) {
     }
   }, [category, bookings]);
 
+  if (loading) return <p>Loading bookings...</p>;
+  //this error handling will display an error message and a retry button if there was an error fetching the bookings. The retry button will reload the page, which will trigger the useEffect to fetch the bookings again.
+  if (error)
+    return (
+      <div className="error-state">
+        <p>{error}</p>
+        <button
+          className="retry-button"
+          onClick={() => window.location.reload()}
+        >
+          🔄 Retry
+        </button>
+      </div>
+    );
+
+
   return (
     <main className="container">
-      <p className="counter"><strong>Total Bookings: {filteredBookings.length}</strong></p>
+      <p className="counter">
+        <strong>Total Bookings: {filteredBookings.length}</strong>
+      </p>
 
       <Heading title="Add a New Booking" />
-     // <BookingForm addBooking={addBooking} />
+      <BookingForm addBooking={addBooking} />
 
       <div className="filter-section">
         <label htmlFor="category">Filter by Room Type:</label>
-        <select id="category" value={category} onChange={(e) => setCategory(e.target.value)}>
+        <select
+          id="category"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+        >
           <option value="All">All</option>
           <option value="Training">Training</option>
           <option value="BoardRoom">Boardroom</option>
