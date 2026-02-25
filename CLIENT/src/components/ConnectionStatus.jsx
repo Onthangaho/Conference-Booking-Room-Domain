@@ -6,7 +6,7 @@ export default function ConnectionStatus() {
   useEffect(() => {
     const checkConnection = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/bookings/all`, {
+        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/Bookings/all`, {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
         });
      // Add artificial delay before updating status
