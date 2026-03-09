@@ -1,43 +1,30 @@
 import { useState, useEffect } from "react";
-import { fetchAllBookings, addBookingToService, deleteBookingService } from "../services/bookingService";
+import { fetchBookings, fetchMyBookings, createBooking, updateBooking, cancelBooking } from "../services/api";
+import { parseValidationErrors } from "../utils/parseValidationErrors";
 import { toast } from "react-toastify";
 import axios from "axios";
+import * as signalR from "@microsoft/signalr";
 
-export function useBookings() {
-  // State variables to hold the list of bookings, loading status, and any error messages.
+export function useBookings(role) {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [errors, setErrors] = useState({});
 
-  // useEffect hook to fetch bookings when the component mounts. It also sets up an AbortController to allow for cancellation of the request if the component unmounts before the request completes.
+  const isEmployeeView = role === "employee" || role === "receptionist";
+
   useEffect(() => {
-    // Create an AbortController instance to manage cancellation of the fetch request.
     const controller = new AbortController();
 
-    // Async function to load bookings from the API. It handles various error scenarios, such as request cancellation, timeouts, network errors, and server errors, providing appropriate feedback to the user through toast notifications.
     const load = async () => {
       try {
-        const data = await fetchAllBookings(controller.signal);
-        setBookings(data);
-        toast.success("Bookings loaded successfully!");
-      } catch (err) {
-        //if the error is due to request cancellation, we log it and do not show an error toast, as this is an expected scenario when the component unmounts. For other types of errors, we set the error state and show a toast notification with the relevant message.
-        if (axios.isCancel(err)) {
-          console.log("Request cancelled");
+        const data = isEmployeeView
+          ? await fetchMyBookings(controller.signal)
+          : await fetchBookings(controller.signal);
 
-        } else if (err.code === "ECONNABORTED") {
-          setError("Server took too long to respond (timeout).");
-          toast.error("Timeout: server took too long.");
-        } else if (err.message.includes("Network Error")) {
-          setError("Server unreachable. Please check your connection.");
-          toast.error("Network error: server unreachable.");
-        } else if (err.response) {
-          setError(`Server error ${err.response.status}: ${err.response.data}`);
-          toast.error(`Server error ${err.response.status}`);
-        } else {
-          setError("Unexpected error occurred.");
-          toast.error("Unexpected error occurred.");
-        }
+        setBookings(Array.isArray(data) ? data : []);
+      } catch (err) {
+        if (axios.isCancel(err) || err?.code === "ERR_CANCELED") return;
+        toast.error("Failed to load bookings");
       } finally {
         setLoading(false);
       }
@@ -45,30 +32,119 @@ export function useBookings() {
 
     load();
     return () => controller.abort();
-  }, []);
+  }, [isEmployeeView]);
 
-  // Function to add a new booking. It sends the booking data to the API and updates the local state with the newly created booking. It also provides feedback to the user through toast notifications based on the success or failure of the operation.
-  const addBooking = async (newBooking) => {
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const currentUsername = (localStorage.getItem("username") || "").toLowerCase();
+
+    if (!token || !role) return;
+
+    const connection = new signalR.HubConnectionBuilder()
+      .withUrl(`${import.meta.env.VITE_API_BASE_URL}/hubs/bookings`, {
+        accessTokenFactory: () => localStorage.getItem("token") || "",
+      })
+      .withAutomaticReconnect()
+      .build();
+
+    connection.on("bookingChanged", (action, booking) => {
+      setBookings((prev) => {
+        if (!booking) return prev;
+
+        const bookingId = booking.id || booking.Id;
+        if (!bookingId) return prev;
+
+        const normalizedBooking = {
+          ...booking,
+          id: bookingId,
+        };
+
+        const existingIndex = prev.findIndex((item) => item.id === bookingId);
+        const bookingOwner = (normalizedBooking.createdBy || "").toLowerCase();
+        const isMine = !isEmployeeView || bookingOwner === currentUsername;
+
+        if (action === "deleted") {
+          if (existingIndex === -1) return prev;
+          return prev.filter((item) => item.id !== bookingId);
+        }
+
+        if (!isMine && existingIndex === -1) {
+          return prev;
+        }
+
+        if (existingIndex >= 0) {
+          const existing = prev[existingIndex];
+          const updated = { ...existing, ...normalizedBooking };
+
+          const isDuplicate =
+            existing.start === updated.start &&
+            existing.endTime === updated.endTime &&
+            existing.status === updated.status &&
+            existing.cancelledAt === updated.cancelledAt &&
+            existing.isCancelled === updated.isCancelled;
+
+          if (isDuplicate) return prev;
+
+          return prev.map((item) => (item.id === bookingId ? updated : item));
+        }
+
+        if (action === "created") {
+          return [...prev, normalizedBooking];
+        }
+
+        return prev;
+      });
+    });
+
+    connection.start().catch(() => {
+      toast.error("Realtime sync is unavailable. You can still use manual refresh.");
+    });
+
+    return () => {
+      connection.off("bookingChanged");
+      connection.stop();
+    };
+  }, [isEmployeeView, role]);
+
+  const addBooking = async (booking) => {
     try {
-      const created = await addBookingToService(newBooking);
+      const created = await createBooking(booking);
       setBookings((prev) => [...prev, created]);
-      toast.success("Booking added successfully!");
+      toast.success("Booking created!");
+      setErrors({});
+      return true;
     } catch (err) {
-      toast.error(err.message);
+      setErrors(parseValidationErrors(err.response?.data));
+      toast.error(err.response?.data?.message || "Failed to create booking");
+      return false;
     }
   };
-// Function to delete (cancel) a booking. It sends a request to the API to cancel the booking by its ID and updates the local state to reflect the cancellation. It also provides feedback to the user through toast notifications based on the success or failure of the operation.
+
+  const editBooking = async (id, booking) => {
+    try {
+      const updated = await updateBooking(id, booking);
+      setBookings((prev) => prev.map((b) => (b.id === id ? updated : b)));
+      toast.success("Booking updated!");
+      setErrors({});
+      return true;
+    } catch (err) {
+      setErrors(parseValidationErrors(err.response?.data));
+      toast.error(err.response?.data?.message || "Failed to update booking");
+      return false;
+    }
+  };
+
   const deleteBooking = async (id) => {
     try {
-      const cancelled = await deleteBookingService(id);
-      setBookings((prev) =>
-        prev.map((b) => (b.id === id ? { ...b, ...cancelled } : b))
-      );
-      toast.success("Booking cancelled successfully!");
+      const cancelled = await cancelBooking(id);
+      setBookings((prev) => prev.map((b) => (b.id === id ? cancelled : b)));
+      toast.success("Booking cancelled!");
+      return true;
     } catch (err) {
-      toast.error(err.message);
+      toast.error("Failed to cancel booking");
+      return false;
     }
   };
 
-  return { bookings, loading, error, addBooking, deleteBooking };
+  return { bookings, loading, errors, addBooking, editBooking, deleteBooking };
 }

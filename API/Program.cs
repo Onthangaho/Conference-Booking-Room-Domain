@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using ConferenceBookingRoomDomain.Domain;
+using ConferenceBookingRoomAPI.Hubs;
 
 
 
@@ -20,6 +21,7 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
 });
+builder.Services.AddSignalR();
 builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new() { Title = "ConferenceBookingAPI", Version = "v1" });
@@ -86,6 +88,21 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!))
 
     };
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+            var path = context.HttpContext.Request.Path;
+
+            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs/bookings"))
+            {
+                context.Token = accessToken;
+            }
+
+            return Task.CompletedTask;
+        }
+    };
 });
 // Register the BookingManager as a scoped service so it can be injected into controllers
 
@@ -126,6 +143,7 @@ app.UseAuthorization();
 // Add custom exception handling middleware to catch and handle exceptions globally in a consistent way, providing better error responses to clients and improving the overall robustness of the API.
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 app.MapControllers();
+app.MapHub<BookingsHub>("/hubs/bookings");
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
