@@ -1,219 +1,131 @@
 import { useState } from "react";
 import Button from "./Button";
+import { useRooms } from "../hooks/useRooms";
 
+function BookingForm({ addBooking, errors }) {
+  const { rooms, loading } = useRooms();
+  const safeRooms = Array.isArray(rooms) ? rooms : [];
+  const [roomId, setRoomId] = useState("");
+  const [date, setDate] = useState("");
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
+  const [localErrors, setLocalErrors] = useState({});
 
-function BookingForm({ addBooking, bookings }) {
+  const mergedErrors = { ...errors, ...localErrors };
 
-    const [roomName, setRoomName] = useState("");
-    const [roomType, setRoomType] = useState("");
-    const [location, setLocation] = useState("");
-    const [userName, setUserName] = useState("");
-    const [date, setDate] = useState("");
-    const [startTime, setStartTime] = useState("");
-    const [endTime, setEndTime] = useState("");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-    //track validation errors
-    const [errors, setErrors] = useState({});
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        const newErrors = {};
+    const nextErrors = {};
 
-        if (!roomName) newErrors.roomName = "Room Name is required";
-        if (!roomType) newErrors.roomType = "Room Type is required";
-        if (!location) newErrors.location = "Location is required";
-        if (!userName) newErrors.userName = "User Name is required";
-        if (!date) newErrors.date = "Date is required";
-        if (!startTime) newErrors.startTime = "Start Time is required";
-        if (!endTime) newErrors.endTime = "End Time is required";
+    if (!roomId) nextErrors.roomId = "Please select a conference room.";
+    if (!date) nextErrors.date = "Please select a date.";
+    if (!startTime) nextErrors.start = "Please select a start time.";
+    if (!endTime) nextErrors.endTime = "Please select an end time.";
 
-        if (startTime && endTime && endTime <= startTime) {
-            newErrors.endTime = "End time must be later than start time";
-        }
-        // Check if date is in the past
-        if (date && new Date(date) < new Date().setHours(0, 0, 0, 0)) {
-            newErrors.date = "Date cannot be in the past";
-        }
+    if (!nextErrors.start && !nextErrors.endTime && date) {
+      const start = new Date(`${date}T${startTime}`);
+      const end = new Date(`${date}T${endTime}`);
+      const now = new Date();
 
-        // Booking duration must be reasonable (max 8 hours)
-        if (date && startTime && endTime) {
-            const start = new Date(`${date}T${startTime}`);
-            const end = new Date(`${date}T${endTime}`);
-            const diffHours = (end - start) / (1000 * 60 * 60);
+      if (start >= end) {
+        nextErrors.endTime = "End time must be after start time.";
+      }
 
-            if (diffHours > 8) {
-                newErrors.endTime = "Booking cannot exceed 8 hours";
-            }
-        }
+      if (start < now) {
+        nextErrors.start = "Start time cannot be in the past.";
+      }
+    }
 
-        // User name validation (letters only, min 2 chars)
-        if (userName && !/^[A-Za-z\s]{2,}$/.test(userName)) {
-            newErrors.userName = "Enter a valid name (letters only)";
-        }
+    setLocalErrors(nextErrors);
 
+    if (Object.keys(nextErrors).length > 0) return;
 
-        //Room availability check if you track bookings
-        const overlap = bookings.some(b =>
-            b.roomName === roomName &&
-            b.date === date &&
-            !(endTime <= b.startTime || startTime >= b.endTime)
-        );
-        if (overlap) {
-            newErrors.roomName = "This room is already booked for the selected time";
-        }
+    const start = new Date(`${date}T${startTime}`);
+    const end = new Date(`${date}T${endTime}`);
 
-
-
-
-
-        setErrors(newErrors);
-
-        if (Object.keys(newErrors).length > 0) {
-            return;
-        }
-
-        const newBooking = {
-            id: Date.now(),
-            roomName,
-            roomType,
-            location,
-            userName,
-            date,
-            startTime,
-            endTime
-        };
-
-        addBooking(newBooking);
-        handleClear();
-
-
-        // Clear form fields after submission
-        setRoomName("");
-        setRoomType("");
-        setLocation("");
-        setUserName("");
-        setDate("");
-        setStartTime("");
-        setEndTime("");
+    const newBooking = {
+      roomId: parseInt(roomId, 10),
+      start,
+      endTime: end,
     };
 
-    const handleClear = () => {
-        setRoomName("");
-        setRoomType("");
-        setLocation("");
-        setUserName("");
-        setDate("");
-        setStartTime("");
-        setEndTime("");
-        setErrors({});
-    };
+    const success = await addBooking(newBooking);
+    if (success) {
+      handleClear();
+    }
+  };
 
-    return (
+  const handleClear = () => {
+    setRoomId("");
+    setDate("");
+    setStartTime("");
+    setEndTime("");
+    setLocalErrors({});
+  };
 
-        <form onSubmit={handleSubmit} className="booking-form">
+  return (
+    <form onSubmit={handleSubmit} className="booking-form">
+      <div>
+        <label>Conference Room</label>
+        <select
+          className={mergedErrors.roomId ? "input-error" : ""}
+          value={roomId}
+          onChange={(e) => setRoomId(e.target.value)}
+          disabled={loading}
+        >
+          <option value="">Select Room</option>
+          {!loading &&
+            safeRooms.map((room) => (
+              <option key={room.id} value={room.id}>
+                {room.name} ({room.roomType}, {room.location})
+              </option>
+            ))}
+        </select>
+        {mergedErrors.roomId && <p className="error-text">{mergedErrors.roomId}</p>}
+      </div>
 
-            <div>
-                <select
-                    className={errors.roomName ? "input-error" : ""}
-                    value={roomName}
-                    onChange={(e) => setRoomName(e.target.value)}
-                >
-                    <option value="">Select Room</option>
-                    <option value="Conference Room A">Conference Room A</option>
-                    <option value="Conference Room B">Conference Room B</option>
-                    <option value="Conference Room C">Conference Room C</option>
-                    <option value="Conference Room D">Conference Room D</option>
-                </select>
-                {errors.roomName && <p className="error-text">{errors.roomName}</p>}
-            </div>
+      <div>
+        <label>Date</label>
+        <input
+          type="date"
+          className={mergedErrors.date ? "input-error" : ""}
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+        />
+        {mergedErrors.date && <p className="error-text">{mergedErrors.date}</p>}
+      </div>
 
-            <div>
-                <select
-                    className={errors.roomType ? "input-error" : ""}
-                    value={roomType}
-                    onChange={(e) => setRoomType(e.target.value)}
-                >
-                    <option value="">Select Room Type</option>
-                    <option value="Training">Training</option>
-                    <option value="Boardroom">Boardroom</option>
-                    <option value="Standard">Standard</option>
-                </select>
-                {errors.roomType && <p className="error-text">{errors.roomType}</p>}
-            </div>
+      <div>
+        <label>Start Time</label>
+        <input
+          type="time"
+          className={mergedErrors.start ? "input-error" : ""}
+          value={startTime}
+          onChange={(e) => setStartTime(e.target.value)}
+          step="60"
+        />
+        {mergedErrors.start && <p className="error-text">{mergedErrors.start}</p>}
+      </div>
 
+      <div>
+        <label>End Time</label>
+        <input
+          type="time"
+          className={mergedErrors.endTime ? "input-error" : ""}
+          value={endTime}
+          onChange={(e) => setEndTime(e.target.value)}
+          step="60"
+        />
+        {mergedErrors.endTime && <p className="error-text">{mergedErrors.endTime}</p>}
+      </div>
 
-            <div>
-                <select
-                    className={errors.location ? "input-error" : ""}
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                >
-                    <option value="">Select Location</option>
-                    <option value="Bloemfontein">Bloemfontein</option>
-                    <option value="Cape Town">Cape Town</option>
-                </select>
-                {errors.location && <p className="error-text">{errors.location}</p>}
-            </div>
-
-            <div>
-                <input
-                    className={errors.userName ? "input-error" : ""}
-                    value={userName}
-                    onChange={(e) => setUserName(e.target.value)}
-                    placeholder="User Name"
-                />
-                {errors.userName && <p className="error-text">{errors.userName}</p>}
-            </div>
-
-
-            <div>
-                <label>Date</label>
-                <input
-                    type="date"
-                    className={errors.date ? "input-error" : ""}
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                />
-                {errors.date && <p className="error-text">{errors.date}</p>}
-            </div>
-
-
-            <div>
-                <label>Start Time</label>
-                <input
-                    type="time"
-                    className={errors.startTime ? "input-error" : ""}
-                    value={startTime}
-                    onChange={(e) => setStartTime(e.target.value)}
-                />
-                {errors.startTime && <p className="error-text">{errors.startTime}</p>}
-            </div>
-
-            <div>
-                <label>End Time</label>
-                <input
-                    type="time"
-                    className={errors.endTime ? "input-error" : ""}
-                    value={endTime}
-                    onChange={(e) => setEndTime(e.target.value)}
-                />
-                {errors.endTime && <p className="error-text">{errors.endTime}</p>}
-            </div>
-
-
-            <div className="form-actions">
-                <button type="submit" className="btn primary">Add Booking</button>
-
-                <Button
-                    label="Clear"
-                    variant="danger"
-                    onClick={handleClear}
-                    type="button"
-                />
-
-            </div>
-
-        </form>
-    );
+      <div className="form-actions">
+        <button type="submit" className="btn primary">Add Booking</button>
+        <Button label="Clear" variant="danger" onClick={handleClear} type="button" />
+      </div>
+    </form>
+  );
 }
 
 export default BookingForm;
