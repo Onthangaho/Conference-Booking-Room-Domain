@@ -31,7 +31,7 @@ namespace ConferenceBookingRoomAPI.Controllers
         }
 
         [HttpGet("all")]
-        //[Authorize(Roles = "Admin")] // Only authenticated users with Admin or User roles can access this endpoint
+        [Authorize(Roles = "Admin")] // Only authenticated users with Admin or User roles can access this endpoint
         public async Task<IActionResult> GetAll()
         {
             var bookings = await _bookingManager.GetAllBookings();
@@ -54,6 +54,48 @@ namespace ConferenceBookingRoomAPI.Controllers
 
             }).ToList();
             return Ok(response);
+        }
+
+        [HttpGet("mine")]
+        [Authorize(Roles = "Employee,Receptionist")]
+        public async Task<IActionResult> GetMine()
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(new ErrorResponseDto
+                {
+                    ErrorCode = "USER_NOT_FOUND",
+                    Message = "Unable to identify the current user.",
+                    Category = "AuthenticationError"
+                });
+            }
+
+            var bookings = await _dbContext.Bookings
+                .Include(b => b.Room)
+                .Include(b => b.User)
+                .AsNoTracking()
+                .Where(b => b.UserId == userId)
+                .OrderByDescending(b => b.CreatedAt)
+                .Select(b => new BookingResponseDto
+                {
+                    Id = b.Id,
+                    RoomName = b.Room.Name,
+                    RoomType = b.Room.RoomType.ToString(),
+                    Capacity = b.Room.Capacity,
+                    Start = b.Start,
+                    EndTime = b.EndTime,
+                    Status = b.Status.ToString(),
+                    CreatedAt = b.CreatedAt,
+                    CreatedBy = b.User != null ? b.User.UserName : "Unknown User",
+                    CancelledAt = b.CancelledAt.HasValue
+                        ? b.CancelledAt.Value.ToString("yyyy-MM-dd HH:mm")
+                        : "Not Cancelled",
+                    IsCancelled = b.CancelledAt.HasValue
+                })
+                .ToListAsync();
+
+            return Ok(bookings);
         }
 
         [HttpPost]
