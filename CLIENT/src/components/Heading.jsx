@@ -1,5 +1,5 @@
-function Heading({ title }) {
-    return <h1 className="heading">{title}</h1>;
+function Heading({ title, text }) {
+    return <h1 className="heading">{title || text}</h1>;
 }
 
 export default Heading;
