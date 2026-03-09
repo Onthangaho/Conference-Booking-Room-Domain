@@ -1,8 +1,10 @@
 using System.Security.Claims;
+using ConferenceBookingRoomAPI.Hubs;
 using ConferenceBookingRoomDomain;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.SignalR;
 
 namespace ConferenceBookingRoomAPI.Controllers
 {
@@ -12,11 +14,28 @@ namespace ConferenceBookingRoomAPI.Controllers
     {
         private readonly BookingManager _bookingManager;
         private readonly ConferenceBookingDbContext _dbContext;
+        private readonly IHubContext<BookingsHub> _bookingsHub;
 
-        public BookingsController(BookingManager bookingManager, ConferenceBookingDbContext dbContext)
+        public BookingsController(BookingManager bookingManager, ConferenceBookingDbContext dbContext, IHubContext<BookingsHub> bookingsHub)
         {
             _bookingManager = bookingManager;
             _dbContext = dbContext;
+            _bookingsHub = bookingsHub;
+        }
+
+        private async Task BroadcastBookingChangedAsync(string action, object payload, string? createdBy = null)
+        {
+            var tasks = new List<Task>
+            {
+                _bookingsHub.Clients.Group("role:admin").SendAsync("bookingChanged", action, payload)
+            };
+
+            if (!string.IsNullOrWhiteSpace(createdBy))
+            {
+                tasks.Add(_bookingsHub.Clients.Group($"user:{createdBy.ToLowerInvariant()}").SendAsync("bookingChanged", action, payload));
+            }
+
+            await Task.WhenAll(tasks);
         }
 
         [HttpPost("maintenance")]
@@ -106,12 +125,7 @@ namespace ConferenceBookingRoomAPI.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(new ErrorResponseDto
-                {
-                    ErrorCode = "VALIDATION_ERROR",
-                    Message = "The booking request is invalid. Please check the provided data.",
-                    Category = "ValidationError"
-                });
+                return ValidationProblem(ModelState);
             }
 
             var room = await _bookingManager.GetRoomById(dtoBookingRequest.RoomId);
@@ -123,11 +137,12 @@ namespace ConferenceBookingRoomAPI.Controllers
 
             if (!room.IsActive)
             {
-                return BadRequest(new ErrorResponseDto
+                return ValidationProblem(new ValidationProblemDetails(new Dictionary<string, string[]>
                 {
-                    ErrorCode = "ROOM_UNAVAILABLE",
-                    Message = $"The room '{room.Name}' is currently unavailable for booking.",
-                    Category = "BusinessRuleViolation"
+                    [nameof(CreateBookingDto.RoomId)] = new[] { $"The room '{room.Name}' is currently unavailable for booking." }
+                })
+                {
+                    Status = StatusCodes.Status400BadRequest
                 });
             }
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -151,7 +166,32 @@ namespace ConferenceBookingRoomAPI.Controllers
                 });
             }
             var bookinRequest = new BookingRequest(dtoBookingRequest.RoomId, userId, dtoBookingRequest.Start, dtoBookingRequest.EndTime);
-            var booking = await _bookingManager.CreateBooking(bookinRequest);
+
+            Booking booking;
+            try
+            {
+                booking = await _bookingManager.CreateBooking(bookinRequest);
+            }
+            catch (InvalidBookingTimeException)
+            {
+                return ValidationProblem(new ValidationProblemDetails(new Dictionary<string, string[]>
+                {
+                    [nameof(CreateBookingDto.EndTime)] = new[] { "End time must be after start time." }
+                })
+                {
+                    Status = StatusCodes.Status400BadRequest
+                });
+            }
+            catch (BookingConflictException)
+            {
+                return ValidationProblem(new ValidationProblemDetails(new Dictionary<string, string[]>
+                {
+                    [nameof(CreateBookingDto.RoomId)] = new[] { $"{room.Name} is already occupied in the selected time range." }
+                })
+                {
+                    Status = StatusCodes.Status400BadRequest
+                });
+            }
 
             var savedBooking = await _dbContext.Bookings
                 .Include(b => b.Room)
@@ -185,6 +225,8 @@ namespace ConferenceBookingRoomAPI.Controllers
                 CreatedAt = savedBooking.CreatedAt,
                 CreatedBy = User.Identity?.Name ?? "Unknown User",
             };
+
+            await BroadcastBookingChangedAsync("created", bookingResponse, bookingResponse.CreatedBy);
             return Ok(bookingResponse);
         }
 
@@ -194,12 +236,7 @@ namespace ConferenceBookingRoomAPI.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest(new ErrorResponseDto
-                {
-                    ErrorCode = "VALIDATION_ERROR",
-                    Message = "The booking update request is invalid. Please check the provided data.",
-                    Category = "ValidationError"
-                });
+                return ValidationProblem(ModelState);
             }
 
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
@@ -230,26 +267,34 @@ namespace ConferenceBookingRoomAPI.Controllers
 
             if (booking.Status == BookingStatus.Cancelled)
             {
-                return Conflict(new ErrorResponseDto
+                return ValidationProblem(new ValidationProblemDetails(new Dictionary<string, string[]>
                 {
-                    ErrorCode = "BOOKING_ALREADY_CANCELLED",
-                    Message = "Cancelled bookings cannot be edited.",
-                    Category = "BusinessRuleViolation"
+                    ["status"] = new[] { "Cancelled bookings cannot be edited." }
+                })
+                {
+                    Status = StatusCodes.Status400BadRequest
                 });
             }
 
             if (dto.Start >= dto.EndTime)
             {
-                throw new InvalidBookingTimeException(dto.Start, dto.EndTime);
+                return ValidationProblem(new ValidationProblemDetails(new Dictionary<string, string[]>
+                {
+                    [nameof(UpdateBookingDto.EndTime)] = new[] { "End time must be after start time." }
+                })
+                {
+                    Status = StatusCodes.Status400BadRequest
+                });
             }
 
             if (dto.RoomId != booking.RoomId)
             {
-                return BadRequest(new ErrorResponseDto
+                return ValidationProblem(new ValidationProblemDetails(new Dictionary<string, string[]>
                 {
-                    ErrorCode = "ROOM_CHANGE_NOT_ALLOWED",
-                    Message = "Editing a booking cannot change its room.",
-                    Category = "BusinessRuleViolation"
+                    [nameof(UpdateBookingDto.RoomId)] = new[] { "Editing a booking cannot change its room." }
+                })
+                {
+                    Status = StatusCodes.Status400BadRequest
                 });
             }
 
@@ -265,7 +310,13 @@ namespace ConferenceBookingRoomAPI.Controllers
 
             if (hasOverlap)
             {
-                throw new BookingConflictException();
+                return ValidationProblem(new ValidationProblemDetails(new Dictionary<string, string[]>
+                {
+                    [nameof(UpdateBookingDto.RoomId)] = new[] { $"{booking.Room.Name} is already occupied in the selected time range." }
+                })
+                {
+                    Status = StatusCodes.Status400BadRequest
+                });
             }
 
             booking.Start = dto.Start;
@@ -289,6 +340,8 @@ namespace ConferenceBookingRoomAPI.Controllers
                     : "Not Cancelled",
                 IsCancelled = booking.CancelledAt.HasValue
             };
+
+            await BroadcastBookingChangedAsync("updated", updatedResponse, updatedResponse.CreatedBy);
 
             return Ok(updatedResponse);
         }
@@ -345,9 +398,12 @@ namespace ConferenceBookingRoomAPI.Controllers
                 Status = BookingStatus.Cancelled.ToString(),
                 CreatedAt = booking.CreatedAt,
                 CancelledAt = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm"),
+                CreatedBy = booking.User?.UserName ?? "Unknown User",
                 IsCancelled = true
 
             };
+
+            await BroadcastBookingChangedAsync("cancelled", bookingResponse, bookingResponse.CreatedBy);
             return Ok(bookingResponse);
 
         }
@@ -369,6 +425,8 @@ namespace ConferenceBookingRoomAPI.Controllers
                 throw new BookingNotFoundException(id);
 
             }
+
+            await BroadcastBookingChangedAsync("deleted", new { Id = id }, booking.User?.UserName);
 
             return Ok(new ApiResponseDto
             {
