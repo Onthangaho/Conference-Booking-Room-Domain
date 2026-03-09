@@ -39,6 +39,7 @@ namespace ConferenceBookingRoomAPI.Controllers
             var response = bookings.Select(b => new BookingResponseDto
             {
                 Id = b.Id,
+                RoomId = b.RoomId,
                 RoomName = b.Room.Name,
                 RoomType = b.Room.RoomType.ToString(),
                 Capacity = b.Room.Capacity,
@@ -80,6 +81,7 @@ namespace ConferenceBookingRoomAPI.Controllers
                 .Select(b => new BookingResponseDto
                 {
                     Id = b.Id,
+                    RoomId = b.RoomId,
                     RoomName = b.Room.Name,
                     RoomType = b.Room.RoomType.ToString(),
                     Capacity = b.Room.Capacity,
@@ -173,6 +175,7 @@ namespace ConferenceBookingRoomAPI.Controllers
             var bookingResponse = new BookingResponseDto
             {
                 Id = booking.Id,
+                RoomId = savedBooking.RoomId,
                 RoomName = savedBooking.Room.Name,
                 RoomType = savedBooking.Room.RoomType.ToString(),
                 Capacity = savedBooking.Room.Capacity,
@@ -183,6 +186,111 @@ namespace ConferenceBookingRoomAPI.Controllers
                 CreatedBy = User.Identity?.Name ?? "Unknown User",
             };
             return Ok(bookingResponse);
+        }
+
+        [HttpPut("{id}")]
+        [Authorize(Roles = "Employee,Receptionist")]
+        public async Task<IActionResult> UpdateBooking(int id, [FromBody] UpdateBookingDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(new ErrorResponseDto
+                {
+                    ErrorCode = "VALIDATION_ERROR",
+                    Message = "The booking update request is invalid. Please check the provided data.",
+                    Category = "ValidationError"
+                });
+            }
+
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized(new ErrorResponseDto
+                {
+                    ErrorCode = "USER_NOT_FOUND",
+                    Message = "Unable to identify the current user.",
+                    Category = "AuthenticationError"
+                });
+            }
+
+            var booking = await _dbContext.Bookings
+                .Include(b => b.Room)
+                .Include(b => b.User)
+                .FirstOrDefaultAsync(b => b.Id == id && !b.IsDeleted);
+
+            if (booking == null)
+            {
+                throw new BookingNotFoundException(id);
+            }
+
+            if (booking.UserId != userId)
+            {
+                return Forbid();
+            }
+
+            if (booking.Status == BookingStatus.Cancelled)
+            {
+                return Conflict(new ErrorResponseDto
+                {
+                    ErrorCode = "BOOKING_ALREADY_CANCELLED",
+                    Message = "Cancelled bookings cannot be edited.",
+                    Category = "BusinessRuleViolation"
+                });
+            }
+
+            if (dto.Start >= dto.EndTime)
+            {
+                throw new InvalidBookingTimeException(dto.Start, dto.EndTime);
+            }
+
+            if (dto.RoomId != booking.RoomId)
+            {
+                return BadRequest(new ErrorResponseDto
+                {
+                    ErrorCode = "ROOM_CHANGE_NOT_ALLOWED",
+                    Message = "Editing a booking cannot change its room.",
+                    Category = "BusinessRuleViolation"
+                });
+            }
+
+            var hasOverlap = await _dbContext.Bookings
+                .AsNoTracking()
+                .AnyAsync(b =>
+                    b.Id != id &&
+                    !b.IsDeleted &&
+                    b.RoomId == dto.RoomId &&
+                    b.Status == BookingStatus.Confirmed &&
+                    dto.Start < b.EndTime &&
+                    dto.EndTime > b.Start);
+
+            if (hasOverlap)
+            {
+                throw new BookingConflictException();
+            }
+
+            booking.Start = dto.Start;
+            booking.EndTime = dto.EndTime;
+            await _dbContext.SaveChangesAsync();
+
+            var updatedResponse = new BookingResponseDto
+            {
+                Id = booking.Id,
+                RoomId = booking.RoomId,
+                RoomName = booking.Room.Name,
+                RoomType = booking.Room.RoomType.ToString(),
+                Capacity = booking.Room.Capacity,
+                Start = booking.Start,
+                EndTime = booking.EndTime,
+                Status = booking.Status.ToString(),
+                CreatedAt = booking.CreatedAt,
+                CreatedBy = booking.User != null ? booking.User.UserName : "Unknown User",
+                CancelledAt = booking.CancelledAt.HasValue
+                    ? booking.CancelledAt.Value.ToString("yyyy-MM-dd HH:mm")
+                    : "Not Cancelled",
+                IsCancelled = booking.CancelledAt.HasValue
+            };
+
+            return Ok(updatedResponse);
         }
 
 
@@ -228,16 +336,16 @@ namespace ConferenceBookingRoomAPI.Controllers
             var bookingResponse = new BookingResponseDto
             {
                 Id = booking.Id,
+                RoomId = booking.RoomId,
                 RoomName = booking.Room.Name,
                 RoomType = booking.Room.RoomType.ToString(),
                 Capacity = booking.Room.Capacity,
                 Start = booking.Start,
                 EndTime = booking.EndTime,
-                Status = booking.Status.ToString(),
+                Status = BookingStatus.Cancelled.ToString(),
                 CreatedAt = booking.CreatedAt,
-                CancelledAt = booking.CancelledAt.HasValue
-                ? booking.CancelledAt.Value.ToString("yyyy-MM-dd HH:mm")
-                : "Not Cancelled",
+                CancelledAt = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm"),
+                IsCancelled = true
 
             };
             return Ok(bookingResponse);
