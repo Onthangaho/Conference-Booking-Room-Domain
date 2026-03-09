@@ -1,17 +1,16 @@
-function Navbar() {
-
-
-    return (
-        <nav className="navbar">
-            <h1>Conference Room Booking</h1>
-
-            <div>
-                <a href="#">Home</a>
-                <a href="#">Bookings</a>
-                <a href="#">Rooms</a>
-            </div>
-        </nav>
-    )
+function Navbar({ onLogout, isAuthenticated }) {
+  return (
+    <nav className="navbar">
+      <span>Conference Booking System</span>
+      <div>
+        {isAuthenticated ? (
+          <button className="btn danger" onClick={onLogout}>Sign Out</button>
+        ) : (
+          <span>Please log in</span>
+        )}
+      </div>
+    </nav>
+  );
 }
 
 export default Navbar;
