@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import apiClient from "../api/apiClient";
 
 export default function ConnectionStatus() {
   const [status, setStatus] = useState("Checking...");
@@ -6,20 +7,14 @@ export default function ConnectionStatus() {
   useEffect(() => {
     const checkConnection = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/Bookings/all`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
-        });
-     // Add artificial delay before updating status
+        await apiClient.get("/ConferenceRooms");
         setTimeout(() => {
-          if (res.ok) {
-            setStatus("🟢 Connected");
-          } else {
-            setStatus("🔴 Backend Offline");
-          }
+          setStatus("🟢 Connected");
         }, 1000); // 1 second delay
       } catch (err) {
+        const status = err?.response?.status;
         setTimeout(() => {
-          setStatus("🔴 Backend Offline");
+          setStatus(status === 401 || status === 403 ? "🟢 Connected" : "🔴 Backend Offline");
         }, 1000);
       }
     };
