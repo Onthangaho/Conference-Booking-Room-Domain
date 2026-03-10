@@ -43,12 +43,16 @@ export function useBookings(role) {
     // If no token or role, do not establish connection
     if (!token || !role) return;
     // Build SignalR connection with access token for authentication
+    // Remove /api from base URL for SignalR endpoint since hub is at root level
+    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/api$/, "") || "http://localhost:5248";
     const connection = new signalR.HubConnectionBuilder()
-      .withUrl(`${process.env.NEXT_PUBLIC_API_BASE_URL}/hubs/bookings`, {
+      .withUrl(`${baseUrl}/hubs/bookings`, {
         accessTokenFactory: () => localStorage.getItem("token") || "",
       })
+      .configureLogging(signalR.LogLevel.None)
       .withAutomaticReconnect()
       .build();
+    let isDisposed = false;
     // Listen for booking changes and update state accordingly
     connection.on("bookingChanged", (action, booking) => {
       setBookings((prev) => {
@@ -100,13 +104,22 @@ export function useBookings(role) {
       });
     });
 
-    connection.start().catch(() => {
+    const startPromise = connection.start().catch((err) => {
+      const message = err?.message || "";
+      if (isDisposed || message.includes("stopped during negotiation")) return;
       toast.error("Realtime sync is unavailable. You can still use manual refresh.");
     });
 
     return () => {
+      isDisposed = true;
       connection.off("bookingChanged");
-      connection.stop();
+      Promise.resolve(startPromise)
+        .catch(() => {})
+        .finally(() => {
+          if (connection.state !== signalR.HubConnectionState.Disconnected) {
+            connection.stop().catch(() => {});
+          }
+        });
     };
   }, [isEmployeeView, role]);
 
