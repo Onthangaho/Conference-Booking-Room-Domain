@@ -20,7 +20,7 @@ export function BookingDetailPageClient({ bookingId }) {
         } catch {
           data = await apiClient.get("/Bookings/all");
         }
-
+        //if the component has unmounted while waiting for the API response, do nothing
         if (!mounted) return;
 
         const match = (Array.isArray(data) ? data : []).find(

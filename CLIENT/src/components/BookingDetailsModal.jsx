@@ -1,5 +1,5 @@
 import ReactDOM from "react-dom";
-
+// This component is used to display booking details in a modal. It uses React Portal to render the modal at the root level of the DOM, allowing it to overlay other content. The modal displays various details about a booking and includes a close button to dismiss it.
 function BookingDetailsModal({ booking, onClose, formatDateTime }) {
   return ReactDOM.createPortal(
     <div className="modal-overlay">

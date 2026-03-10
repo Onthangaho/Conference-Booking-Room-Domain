@@ -1,5 +1,5 @@
 "use client";
-
+// This hook manages booking data and real-time updates based on user role (employee or admin).
 import { useState, useEffect } from "react";
 import { fetchBookings, fetchMyBookings, createBooking, updateBooking, cancelBooking } from "../services/api";
 import { parseValidationErrors } from "../utils/parseValidationErrors";
@@ -14,9 +14,10 @@ export function useBookings(role) {
 
   const isEmployeeView = role === "employee" || role === "receptionist";
 
+  // Load bookings on mount and when role changes
   useEffect(() => {
     const controller = new AbortController();
-
+    // Fetch bookings based on user role
     const load = async () => {
       try {
         const data = isEmployeeView
@@ -35,24 +36,25 @@ export function useBookings(role) {
     load();
     return () => controller.abort();
   }, [isEmployeeView]);
-
+// Set up SignalR connection for real-time updates
   useEffect(() => {
     const token = localStorage.getItem("token");
     const currentUsername = (localStorage.getItem("username") || "").toLowerCase();
-
+    // If no token or role, do not establish connection
     if (!token || !role) return;
-
+    // Build SignalR connection with access token for authentication
     const connection = new signalR.HubConnectionBuilder()
       .withUrl(`${process.env.NEXT_PUBLIC_API_BASE_URL}/hubs/bookings`, {
         accessTokenFactory: () => localStorage.getItem("token") || "",
       })
       .withAutomaticReconnect()
       .build();
-
+    // Listen for booking changes and update state accordingly
     connection.on("bookingChanged", (action, booking) => {
       setBookings((prev) => {
+        // If no booking data, return previous state
         if (!booking) return prev;
-
+        //this is to handle the case where the API returns a booking object without an 'id' property, but has 'Id' instead. We want to normalize it to always have 'id'.
         const bookingId = booking.id || booking.Id;
         if (!bookingId) return prev;
 
@@ -60,20 +62,20 @@ export function useBookings(role) {
           ...booking,
           id: bookingId,
         };
-
+      // Find existing booking index in state
         const existingIndex = prev.findIndex((item) => item.id === bookingId);
         const bookingOwner = (normalizedBooking.createdBy || "").toLowerCase();
         const isMine = !isEmployeeView || bookingOwner === currentUsername;
-
+      // Handle deletion: if booking is deleted, remove it from state
         if (action === "deleted") {
           if (existingIndex === -1) return prev;
           return prev.filter((item) => item.id !== bookingId);
         }
-
+      // For non-deletion actions, if the booking is not relevant to the user (not theirs and they are in employee view), do not add it to state
         if (!isMine && existingIndex === -1) {
           return prev;
         }
-
+ // If booking exists, update it; if not and it's a creation action, add it to state
         if (existingIndex >= 0) {
           const existing = prev[existingIndex];
           const updated = { ...existing, ...normalizedBooking };
