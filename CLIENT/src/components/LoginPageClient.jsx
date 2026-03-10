@@ -5,28 +5,35 @@ import { useRouter } from "next/navigation";
 import LoginForm from "./LoginForm";
 import { useAuth } from "../hooks/useAuth";
 
-// This component represents the login page for the application. It checks if the user is already authenticated and redirects to the dashboard if so. If the user is not authenticated, it renders a LoginForm component and handles the login process by calling the login function from the authentication hook and then navigating to the dashboard upon successful login.
 export function LoginPageClient() {
   const router = useRouter();
-  const { isAuthenticated, login } = useAuth();
+  const { isAuthenticated, loading, login } = useAuth();
 
-  // On component mount and whenever authentication status changes, check if the user is authenticated. If so, redirect to the dashboard page.
+  // Only redirect if loading is complete and user is authenticated
   useEffect(() => {
-    // If user is already authenticated, redirect to dashboard
-    if (isAuthenticated) {
+    if (!loading && isAuthenticated) {
       router.replace("/dashboard");
     }
-  }, [isAuthenticated, router]);
+  }, [isAuthenticated, loading, router]);
 
-  return (
-    <main className="container">
-      {/* LoginForm remains interactive Client UI. */}
-      <LoginForm
-        onLogin={async (username, password) => {
-          await login(username, password);
-          router.push("/dashboard");
-        }}
-      />
-    </main>
-  );
+  // Show loading during initial auth check
+  if (loading) {
+    return <main className="container"><p>Loading...</p></main>;
+  }
+
+  // Show login form if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <main className="container">
+        <LoginForm
+          onLogin={async (username, password) => {
+            await login(username, password);
+            router.push("/dashboard");
+          }}
+        />
+      </main>
+    );
+  }
+
+  return null;
 }

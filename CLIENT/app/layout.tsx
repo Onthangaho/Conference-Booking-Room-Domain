@@ -13,16 +13,17 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body suppressHydrationWarning>
-        {/* Layout stays mounted between route transitions (App Router behavior). */}
-        <div className="app-shell">
-          <ShellHeader />
-          <div className="shell-content">
-            <ShellSidebar />
-            <section className="shell-main">{children}</section>
+        <AppProviders>
+          {/* Layout stays mounted between route transitions (App Router behavior). */}
+          <div className="app-shell">
+            <ShellHeader />
+            <div className="shell-content">
+              <ShellSidebar />
+              <section className="shell-main">{children}</section>
+            </div>
+            <ShellFooter />
           </div>
-          <ShellFooter />
-        </div>
-        <AppProviders />
+        </AppProviders>
       </body>
     </html>
   );
