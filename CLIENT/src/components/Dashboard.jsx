@@ -1,5 +1,7 @@
+"use client";
+
 import Heading from "./Heading";
-import BookingList from "./BookingList";
+import BookingListClient from "./BookingListClient";
 import BookingForm from "./BookingForm";
 import { useBookings } from "../hooks/useBookings";
 import { useEffect, useMemo, useState } from "react";
@@ -207,7 +209,7 @@ function Dashboard({ role }) {
           <Heading title="Create Booking" />
           <BookingForm addBooking={addBooking} errors={errors} />
           <Heading title="My Active Bookings" />
-          <BookingList
+          <BookingListClient
             bookings={pagedBookings}
             role={normalizedRole}
             editBooking={editBooking}
@@ -218,7 +220,7 @@ function Dashboard({ role }) {
       {normalizedRole === "admin" && (
         <>
           <Heading title="All Active Bookings" />
-          <BookingList
+          <BookingListClient
             bookings={pagedBookings}
             role={normalizedRole}
             deleteBooking={deleteBooking}

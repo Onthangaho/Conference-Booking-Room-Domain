@@ -1,95 +1,28 @@
-# Conference Booking System – Frontend (Assignment 1.1)
+# Conference Booking System – Frontend
 
-## 📌 Overview
+This frontend is migrated to **Next.js App Router**.
 
-This is the frontend implementation for the Conference Booking System.
+## Routes
+- `/` landing page
+- `/login` login page
+- `/dashboard` dashboard page
+- `/bookings/[id]` dynamic booking detail page
 
-The purpose of this assignment is to demonstrate:
+## Architecture Highlights
+- Root shell is in `app/layout.tsx` (persistent Header + Sidebar + Footer).
+- Route entry points use the App Router `page.tsx` convention.
+- Interactivity uses `"use client"` only where needed (forms, hooks, click handlers).
+- Navigation uses Next.js `Link` for client-side transitions.
+- API base URL uses Next env variable: `NEXT_PUBLIC_API_BASE_URL` from `.env.local`.
 
-- Component-driven development using React
-- Proper project structure
-- Reusable functional components
-- Props-based data rendering
-- List rendering using `.map()` with unique keys
-- Clean UI layout using CSS
+## Run
+```bash
+cd CLIENT
+npm install
+npm run dev
+```
 
-⚠️ Note: This frontend uses mock data only. No API integration has been implemented yet.
+Open: `http://localhost:3000`
 
----
-
-## 🛠️ Technologies Used
-
-- React (Functional Components)
-- Vite
-- JavaScript (ES6+)
-- CSS
-
----
-
-## 📂 Project Structure
-# Conference Booking System – Frontend (Assignment 1.1)
-
-## 📌 Overview
-
-This is the frontend implementation for the Conference Booking System.
-
-The purpose of this assignment is to demonstrate:
-
-- Component-driven development using React
-- Proper project structure
-- Reusable functional components
-- Props-based data rendering
-- List rendering using `.map()` with unique keys
-- Clean UI layout using CSS
-
-⚠️ Note: This frontend uses mock data only. No API integration has been implemented yet.
-
----
-
-## 🛠️ Technologies Used
-
-- React (Functional Components)
-- Vite
-- JavaScript (ES6+)
-- CSS
-
----
-
-## 📂 Project Structure
-
-src/
-│
-├── components/
-│ ├── Navbar.jsx
-│ ├── Footer.jsx
-│ ├── BookingCard.jsx
-│ └── Button.jsx
-│
-├── data/
-│ └── mockData.js
-│
-├── styles/
-│ └── main.css
-│
-├── App.jsx
-└── main.jsx
-
-
----
-
-## ▶️ How to Run the Frontend
-
-1. Navigate to the frontend folder:
-- cd CLIENT
-
-2. Install dependencies:
-
-
-3. Start the development server:
-
-
-4. Open your browser and go to:
-- [text](http://localhost:5173)
-
-## 👩🏽‍💻 Author
+## Author
 ONTHANGAHO MAGORO
