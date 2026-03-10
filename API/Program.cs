@@ -131,7 +131,8 @@ builder.Services.AddCors(options =>
                 "https://127.0.0.1:5173"
               )
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials(); // Required for SignalR WebSocket connections
     });
 });
 
