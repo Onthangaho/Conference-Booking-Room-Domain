@@ -1,0 +1,40 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "API: Restart Clean (Port 5248)",
+      "type": "shell",
+      "command": "$port = 5248; $listeners = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue; if ($listeners) { $listeners | Select-Object -ExpandProperty OwningProcess -Unique | ForEach-Object { Stop-Process -Id $_ -Force } }; Set-Location API; dotnet run",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "shell": {
+          "executable": "powershell"
+        }
+      },
+      "problemMatcher": "$msCompile",
+      "group": "build"
+    },
+    {
+      "label": "CLIENT: Start Dev (Port 3000)",
+      "type": "shell",
+      "command": "Set-Location CLIENT; npm.cmd run dev",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "shell": {
+          "executable": "powershell"
+        }
+      },
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "APP: Start API + CLIENT",
+      "dependsOn": [
+        "API: Restart Clean (Port 5248)",
+        "CLIENT: Start Dev (Port 3000)"
+      ],
+      "dependsOrder": "parallel",
+      "problemMatcher": []
+    }
+  ]
+}

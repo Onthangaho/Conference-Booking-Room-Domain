@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from "react";
 import { fetchBookings, fetchMyBookings, createBooking, updateBooking, cancelBooking } from "../services/api";
 import { parseValidationErrors } from "../utils/parseValidationErrors";
@@ -41,7 +43,7 @@ export function useBookings(role) {
     if (!token || !role) return;
 
     const connection = new signalR.HubConnectionBuilder()
-      .withUrl(`${import.meta.env.VITE_API_BASE_URL}/hubs/bookings`, {
+      .withUrl(`${process.env.NEXT_PUBLIC_API_BASE_URL}/hubs/bookings`, {
         accessTokenFactory: () => localStorage.getItem("token") || "",
       })
       .withAutomaticReconnect()
@@ -140,7 +142,7 @@ export function useBookings(role) {
       setBookings((prev) => prev.map((b) => (b.id === id ? cancelled : b)));
       toast.success("Booking cancelled!");
       return true;
-    } catch (err) {
+    } catch {
       toast.error("Failed to cancel booking");
       return false;
     }

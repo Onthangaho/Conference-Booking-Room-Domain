@@ -9,6 +9,7 @@ export function useRooms() {
   useEffect(() => {
     const controller = new AbortController();
 
+    // Fetch rooms if
     const load = async () => {
       try {
         const data = await fetchRooms(controller.signal);

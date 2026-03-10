@@ -1,3 +1,5 @@
+"use client";
+
 import Button from "./Button";
 import { useState } from "react";
 import ConfirmModal from "./ComfirmModal";
@@ -15,8 +17,6 @@ function BookingCard({ booking, role, deleteBooking, editBooking }) {
 
   const isAdmin = role === "admin";
   const isEmployee = role === "employee" || role === "receptionist";
-  const startDate = new Date(booking.start);
-  const endDate = new Date(booking.endTime);
   const canEdit = isEmployee && !booking.isCancelled;
 
   const formatDateTime = (value) => {
