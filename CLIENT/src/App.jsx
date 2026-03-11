@@ -7,11 +7,11 @@ import { ToastContainer } from "react-toastify";
 import { useAuth } from "./hooks/useAuth";
 
 function App() {
-  const { isAuthenticated, role, login, logout } = useAuth();
+  const { isAuthenticated, role, username, login, logout } = useAuth();
 
   return (
     <>
-      <Navbar onLogout={logout} isAuthenticated={isAuthenticated} />
+      <Navbar onLogout={logout} isAuthenticated={isAuthenticated} username={username} />
       <Header />
       {isAuthenticated ? (
         <Dashboard role={role} />
