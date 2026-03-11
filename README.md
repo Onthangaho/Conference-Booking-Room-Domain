@@ -2,17 +2,21 @@
 
 Full-stack conference room booking system with:
 - ASP.NET Core Web API + PostgreSQL + Identity/JWT
-- React + Vite frontend
+- Next.js 15 (App Router) frontend
 - Role-based access (Admin, Employee, Receptionist)
 - Real-time booking sync via SignalR
+- Global authentication via React Context API
 
 ## Features
 
 ### Authentication & Authorization
 - Login endpoint issues JWT token (`/api/Auth/login`)
-- Frontend stores token/role in `localStorage`
+- Global `AuthContext` stores `token`, `role`, `username`, `isAuthenticated`, `loading`
+- Auth state hydrated from `localStorage` on app load — session survives page refresh
+- `useAuth()` custom hook exposes auth state and actions to any component
+- `AuthGuard` component protects private routes — redirects guests to `/login`
 - Axios request interceptor auto-attaches `Authorization: Bearer <token>`
-- Axios response interceptor handles `401` globally and clears auth state
+- Axios response interceptor handles `401` by calling `logout()` from context
 - Role-protected endpoints (`[Authorize(Roles = ...)]`)
 
 ### Booking Mutations (POST/PUT)
@@ -26,42 +30,55 @@ Full-stack conference room booking system with:
 - Backend enforces fail-fast rules (invalid time, overlap, invalid room, etc.)
 - Invalid requests return `400` with `ValidationProblemDetails` for field-level errors
 - Frontend parses and maps validation errors to form inputs
-- Inline field messages are shown under inputs
+- Inline field messages shown under inputs
 
 ### Business Rules
 - End time must be after start time
 - No overlap in same room for confirmed bookings
-- Booking must reference existing room
-- Room must be active for booking
-- Employee can only edit own booking
+- Booking must reference an existing active room
+- Employee can only edit their own booking
 - Cancelled bookings cannot be edited
-- Deleting booking is restricted by backend rule flow
 
 ### Dashboard UX
-- Role-aware dashboard (`Logged in as ...`)
+- Role-aware dashboard
 - Admin sees all active bookings
 - Employee/Receptionist sees own active bookings + booking form
 - Search + room type filter + sort + pagination
 - Persisted dashboard preferences in `localStorage`
 - Reset preferences button
 
+### Dynamic Navigation
+- Sidebar shows `Home` + `Login` for guests; `Dashboard` only when authenticated
+- Header toggles between `Login` link (guest) and `Welcome, <name>` + `Logout` button (authenticated)
+
 ### Real-Time Sync (SignalR)
 - Hub endpoint: `/hubs/bookings`
 - Broadcasts on create/update/cancel/delete
 - Group-targeted delivery:
-  - all admins (`role:admin`)
-  - booking owner (`user:{username}`)
+  - All admins (`role:admin`)
+  - Booking owner (`user:{username}`)
 - React listener updates booking list live across tabs
-- Cleanup included (`off` + `stop`) to avoid memory leaks
+- Cleanup on unmount (`off` + `stop`) to avoid memory leaks
 
 ## Tech Stack
-- Backend: .NET 8, ASP.NET Core, EF Core, PostgreSQL, Identity, JWT, SignalR
-- Frontend: React 19, Vite, Axios, React Toastify, SignalR JS client
+- **Backend:** .NET 8, ASP.NET Core, EF Core, PostgreSQL, Identity, JWT, SignalR
+- **Frontend:** Next.js 15 (App Router), React 19, TypeScript, Axios, React Toastify, SignalR JS client
 
 ## Project Structure
-- `API/` — ASP.NET Core API, auth, controllers, middleware, SignalR hub
-- `Domain/` — domain entities and business logic
-- `CLIENT/` — React frontend
+```
+API/             — ASP.NET Core API (auth, controllers, middleware, SignalR hub)
+Domain/          — Domain entities and business logic
+booking-next/    — Next.js App Router frontend
+  app/           — Routes, layout, shell components
+  src/
+    api/         — Axios client with interceptors
+    contexts/    — AuthContext (global auth state)
+    hooks/       — useAuth, useBookings, useRooms
+    components/  — UI + page client components
+    services/    — API service functions
+    styles/      — Global CSS
+CLIENT/          — Legacy Vite/React frontend (reference only)
+```
 
 ## Setup
 
@@ -76,24 +93,28 @@ cd API
 dotnet restore
 dotnet run
 ```
+API runs at `http://localhost:5248`  
+Swagger (dev): `http://localhost:5248/swagger`
 
-API swagger (dev):
-- `http://localhost:5247/swagger`
-
-### 2) Run Client
+### 2) Run Next.js Client
 ```bash
-cd CLIENT
+cd booking-next
 npm install
 npm run dev
 ```
+Client runs at `http://localhost:3000`
 
-Client default:
-- `http://localhost:5173`
+Create `booking-next/.env.local`:
+```
+NEXT_PUBLIC_API_BASE_URL=http://localhost:5248/api
+```
 
-## Important Notes
-- All client network calls use the preconfigured Axios singleton (no native fetch).
-- Booking and auth logic are implemented in custom hooks (`useBookings`, `useAuth`).
-- State updates follow immutable patterns.
+## Test Accounts
+| Role | Username | Password |
+|---|---|---|
+| Admin | admin | Admin@123 |
+| Employee | employee | Employee@123 |
+| Receptionist | receptionist | Receptionist@123 |
 
 ## Author
-- Onthangaho Magoro
+Onthangaho Magoro

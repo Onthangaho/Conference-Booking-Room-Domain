@@ -17,6 +17,19 @@
     {
       "label": "CLIENT: Start Dev (Port 3000)",
       "type": "shell",
+      "command": "Set-Location booking-next; npm.cmd run dev",
+      "options": {
+        "cwd": "${workspaceFolder}",
+        "shell": {
+          "executable": "powershell"
+        }
+      },
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "CLIENT (Vite): Start Dev (Port 5173)",
+      "type": "shell",
       "command": "Set-Location CLIENT; npm.cmd run dev",
       "options": {
         "cwd": "${workspaceFolder}",

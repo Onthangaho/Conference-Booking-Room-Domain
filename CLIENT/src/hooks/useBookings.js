@@ -44,7 +44,7 @@ export function useBookings(role) {
     if (!token || !role) return;
     // Build SignalR connection with access token for authentication
     // Remove /api from base URL for SignalR endpoint since hub is at root level
-    const baseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/api$/, "") || "http://localhost:5248";
+    const baseUrl = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/api$/, "") || "http://localhost:5248";
     const connection = new signalR.HubConnectionBuilder()
       .withUrl(`${baseUrl}/hubs/bookings`, {
         accessTokenFactory: () => localStorage.getItem("token") || "",
