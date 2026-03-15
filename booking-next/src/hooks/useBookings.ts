@@ -1,32 +1,40 @@
 "use client";
 // This hook manages booking data and real-time updates based on user role (employee or admin).
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { fetchBookings, fetchMyBookings, createBooking, updateBooking, cancelBooking } from "../services/api";
 import { parseValidationErrors } from "../utils/parseValidationErrors";
 import { toast } from "react-toastify";
 import axios from "axios";
 import * as signalR from "@microsoft/signalr";
+import { useDebouncedValue } from "./useDebouncedValue";
 
-export function useBookings(role) {
+export function useBookings(role, searchTerm = "") {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errors, setErrors] = useState({});
+  const [loadError, setLoadError] = useState("");
+  const [reloadSeed, setReloadSeed] = useState(0);
+
+  const debouncedSearchTerm = useDebouncedValue(searchTerm, 400);
 
   const isEmployeeView = role === "employee" || role === "receptionist";
 
   // Load bookings on mount and when role changes
   useEffect(() => {
     const controller = new AbortController();
+    setLoading(true);
+    setLoadError("");
     // Fetch bookings based on user role
     const load = async () => {
       try {
         const data = isEmployeeView
-          ? await fetchMyBookings(controller.signal)
-          : await fetchBookings(controller.signal);
+          ? await fetchMyBookings(controller.signal, debouncedSearchTerm)
+          : await fetchBookings(controller.signal, debouncedSearchTerm);
 
         setBookings(Array.isArray(data) ? data : []);
       } catch (err) {
         if (axios.isCancel(err) || err?.code === "ERR_CANCELED") return;
+        setLoadError("Failed to load bookings. Please try again.");
         toast.error("Failed to load bookings");
       } finally {
         setLoading(false);
@@ -35,7 +43,7 @@ export function useBookings(role) {
 
     load();
     return () => controller.abort();
-  }, [isEmployeeView]);
+  }, [isEmployeeView, debouncedSearchTerm, reloadSeed]);
 // Set up SignalR connection for real-time updates
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -123,7 +131,11 @@ export function useBookings(role) {
     };
   }, [isEmployeeView, role]);
 
-  const addBooking = async (booking) => {
+  const retryLoad = useCallback(() => {
+    setReloadSeed((prev) => prev + 1);
+  }, []);
+
+  const addBooking = useCallback(async (booking) => {
     try {
       const created = await createBooking(booking);
       setBookings((prev) => [...prev, created]);
@@ -135,9 +147,9 @@ export function useBookings(role) {
       toast.error(err.response?.data?.message || "Failed to create booking");
       return false;
     }
-  };
+  }, []);
 
-  const editBooking = async (id, booking) => {
+  const editBooking = useCallback(async (id, booking) => {
     try {
       const updated = await updateBooking(id, booking);
       setBookings((prev) => prev.map((b) => (b.id === id ? updated : b)));
@@ -149,9 +161,9 @@ export function useBookings(role) {
       toast.error(err.response?.data?.message || "Failed to update booking");
       return false;
     }
-  };
+  }, []);
 
-  const deleteBooking = async (id) => {
+  const deleteBooking = useCallback(async (id) => {
     try {
       const cancelled = await cancelBooking(id);
       setBookings((prev) => prev.map((b) => (b.id === id ? cancelled : b)));
@@ -161,7 +173,7 @@ export function useBookings(role) {
       toast.error("Failed to cancel booking");
       return false;
     }
-  };
+  }, []);
 
-  return { bookings, loading, errors, addBooking, editBooking, deleteBooking };
+  return { bookings, loading, loadError, errors, addBooking, editBooking, deleteBooking, retryLoad };
 }

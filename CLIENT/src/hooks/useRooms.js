@@ -5,6 +5,7 @@ import axios from "axios";
 export function useRooms() {
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const controller = new AbortController();
@@ -14,12 +15,13 @@ export function useRooms() {
       try {
         const data = await fetchRooms(controller.signal);
         setRooms(Array.isArray(data) ? data : []);
+        setError("");
       } catch (err) {
         if (axios.isCancel(err) || err?.code === "ERR_CANCELED") {
           // Silent cancel
           return;
         }
-        console.error("Failed to load rooms");
+        setError("Failed to load conference rooms.");
       } finally {
         setLoading(false);
       }
@@ -29,5 +31,5 @@ export function useRooms() {
     return () => controller.abort();
   }, []);
 
-  return { rooms, loading };
+  return { rooms, loading, error };
 }

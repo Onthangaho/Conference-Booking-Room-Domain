@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import BookingCard from "./BookingCard";
 // This component is responsible for displaying a list of bookings. It receives the bookings data, user role, and functions to handle booking deletion and editing as props. If there are no bookings to display, it shows a message indicating that no bookings were found. Otherwise, it maps over the bookings array and renders a BookingCard for each booking, passing down the necessary props to each card.
 function BookingListClient({ bookings, role, deleteBooking, editBooking }) {
@@ -22,4 +23,4 @@ function BookingListClient({ bookings, role, deleteBooking, editBooking }) {
   );
 }
 
-export default BookingListClient;
+export default memo(BookingListClient);

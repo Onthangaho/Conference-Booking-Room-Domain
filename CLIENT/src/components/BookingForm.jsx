@@ -5,7 +5,7 @@ import Button from "./Button";
 import { useRooms } from "../hooks/useRooms";
 
 function BookingForm({ addBooking, errors }) {
-  const { rooms, loading } = useRooms();
+  const { rooms, loading, error } = useRooms();
   const safeRooms = Array.isArray(rooms) ? rooms : [];
   const [roomId, setRoomId] = useState("");
   const [date, setDate] = useState("");
@@ -85,6 +85,7 @@ function BookingForm({ addBooking, errors }) {
             ))}
         </select>
         {mergedErrors.roomId && <p className="error-text">{mergedErrors.roomId}</p>}
+        {error && <p className="error-text">{error}</p>}
       </div>
 
       <div>

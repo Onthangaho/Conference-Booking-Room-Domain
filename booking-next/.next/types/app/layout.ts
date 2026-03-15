@@ -1,4 +1,4 @@
-// File: D:\Study broh\Bitcube trainee program\Next js\Conference-Booking-Room-Domain\booking-next\app\layout.tsx
+// File: D:\Study broh\Bitcube trainee program\webapi_practice\Conference-Booking-Room-Domain\booking-next\app\layout.tsx
 import * as entry from '../../../app/layout.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

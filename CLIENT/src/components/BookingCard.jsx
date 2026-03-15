@@ -1,7 +1,7 @@
 "use client";
 
+import { memo, useState } from "react";
 import Button from "./Button";
-import { useState } from "react";
 import ConfirmModal from "./ComfirmModal";
 import BookingDetailsModal from "./BookingDetailsModal";
 
@@ -136,4 +136,4 @@ function BookingCard({ booking, role, deleteBooking, editBooking }) {
   );
 }
 
-export default BookingCard;
+export default memo(BookingCard);

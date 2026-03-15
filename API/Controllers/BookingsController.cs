@@ -51,11 +51,15 @@ namespace ConferenceBookingRoomAPI.Controllers
 
         [HttpGet("all")]
         [Authorize(Roles = "Admin")] // Only authenticated users with Admin or User roles can access this endpoint
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAll([FromQuery] string? searchTerm = null)
         {
-            var bookings = await _bookingManager.GetAllBookings();
-            // Mapping to DTOs so we don't expose internal domain models directly to the API consumers
-            var response = bookings.Select(b => new BookingResponseDto
+            var bookings = await _dbContext.Bookings
+                .Include(b => b.Room)
+                .Include(b => b.User)
+                .AsNoTracking()
+                .Where(b => !b.IsDeleted)
+                .OrderByDescending(b => b.CreatedAt)
+                .Select(b => new BookingResponseDto
             {
                 Id = b.Id,
                 RoomId = b.RoomId,
@@ -66,19 +70,32 @@ namespace ConferenceBookingRoomAPI.Controllers
                 EndTime = b.EndTime,
                 Status = b.Status.ToString(),
                 CreatedAt = b.CreatedAt,
-                CreatedBy = b.User?.UserName ?? "Unknown User",
+                CreatedBy = b.User != null ? b.User.UserName : "Unknown User",
                 CancelledAt = b.CancelledAt.HasValue
                 ? b.CancelledAt.Value.ToString("yyyy-MM-dd HH:mm")
                  : "Not Cancelled",
-                IsCancelled = b.CancelledAt.HasValue  
+                IsCancelled = b.CancelledAt.HasValue
 
-            }).ToList();
-            return Ok(response);
+            }).ToListAsync();
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var normalizedSearch = searchTerm.Trim().ToLowerInvariant();
+                bookings = bookings
+                    .Where(b =>
+                        (b.RoomName?.ToLowerInvariant().Contains(normalizedSearch) ?? false) ||
+                        (b.RoomType?.ToLowerInvariant().Contains(normalizedSearch) ?? false) ||
+                        (b.CreatedBy?.ToLowerInvariant().Contains(normalizedSearch) ?? false) ||
+                        (b.Status?.ToLowerInvariant().Contains(normalizedSearch) ?? false))
+                    .ToList();
+            }
+
+            return Ok(bookings);
         }
 
         [HttpGet("mine")]
         [Authorize(Roles = "Employee,Receptionist")]
-        public async Task<IActionResult> GetMine()
+        public async Task<IActionResult> GetMine([FromQuery] string? searchTerm = null)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId))
@@ -95,7 +112,7 @@ namespace ConferenceBookingRoomAPI.Controllers
                 .Include(b => b.Room)
                 .Include(b => b.User)
                 .AsNoTracking()
-                .Where(b => b.UserId == userId)
+                .Where(b => b.UserId == userId && !b.IsDeleted)
                 .OrderByDescending(b => b.CreatedAt)
                 .Select(b => new BookingResponseDto
                 {
@@ -115,6 +132,18 @@ namespace ConferenceBookingRoomAPI.Controllers
                     IsCancelled = b.CancelledAt.HasValue
                 })
                 .ToListAsync();
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var normalizedSearch = searchTerm.Trim().ToLowerInvariant();
+                bookings = bookings
+                    .Where(b =>
+                        (b.RoomName?.ToLowerInvariant().Contains(normalizedSearch) ?? false) ||
+                        (b.RoomType?.ToLowerInvariant().Contains(normalizedSearch) ?? false) ||
+                        (b.CreatedBy?.ToLowerInvariant().Contains(normalizedSearch) ?? false) ||
+                        (b.Status?.ToLowerInvariant().Contains(normalizedSearch) ?? false))
+                    .ToList();
+            }
 
             return Ok(bookings);
         }

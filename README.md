@@ -2,7 +2,7 @@
 
 Full-stack conference room booking system with:
 - ASP.NET Core Web API + PostgreSQL + Identity/JWT
-- Next.js 15 (App Router) frontend
+- Vite + React frontend
 - Role-based access (Admin, Employee, Receptionist)
 - Real-time booking sync via SignalR
 - Global authentication via React Context API
@@ -62,22 +62,21 @@ Full-stack conference room booking system with:
 
 ## Tech Stack
 - **Backend:** .NET 8, ASP.NET Core, EF Core, PostgreSQL, Identity, JWT, SignalR
-- **Frontend:** Next.js 15 (App Router), React 19, TypeScript, Axios, React Toastify, SignalR JS client
+- **Frontend:** Vite, React 19, JavaScript, Axios, React Toastify, SignalR JS client
 
 ## Project Structure
 ```
 API/             — ASP.NET Core API (auth, controllers, middleware, SignalR hub)
 Domain/          — Domain entities and business logic
-booking-next/    — Next.js App Router frontend
-  app/           — Routes, layout, shell components
+CLIENT/          — Active Vite/React frontend
   src/
     api/         — Axios client with interceptors
     contexts/    — AuthContext (global auth state)
     hooks/       — useAuth, useBookings, useRooms
-    components/  — UI + page client components
+    components/  — Dashboard, booking UI, error boundary, skeleton states
     services/    — API service functions
     styles/      — Global CSS
-CLIENT/          — Legacy Vite/React frontend (reference only)
+booking-next/    — Separate Next.js experiment/reference folder
 ```
 
 ## Setup
@@ -96,18 +95,37 @@ dotnet run
 API runs at `http://localhost:5248`  
 Swagger (dev): `http://localhost:5248/swagger`
 
-### 2) Run Next.js Client
+### 2) Run Client
 ```bash
-cd booking-next
+cd CLIENT
 npm install
 npm run dev
 ```
-Client runs at `http://localhost:3000`
+Client runs at `http://localhost:5173`
 
-Create `booking-next/.env.local`:
+Create `CLIENT/.env.local`:
 ```
-NEXT_PUBLIC_API_BASE_URL=http://localhost:5248/api
+VITE_API_BASE_URL=http://localhost:5248/api
 ```
+
+You can copy the default from `CLIENT/.env.example`.
+
+## Module Polish Phase
+
+The current codebase now includes the missing performance and resiliency improvements requested for the polish assignment:
+
+- Debounced booking search from the React client to the .NET API, instead of filtering only in-memory.
+- Stable derived dashboard state with `useMemo` for filtering, sorting, and pagination.
+- Loading skeletons so the dashboard does not flash empty content while data is loading.
+- A resettable React error boundary so a rendering failure does not force a full browser refresh.
+- Memoized booking list/card rendering to reduce unnecessary child re-renders.
+- Retryable load errors for bookings and visible room-load failures in the booking form.
+
+### Notes for Demonstration
+
+- The active app being demonstrated is the Vite React client in `CLIENT/`.
+- The `booking-next/` folder exists in the repo, but it is not the active frontend used by the current booking flow.
+- React DevTools can show extra renders in development because Strict Mode intentionally re-runs parts of the render lifecycle. What matters here is that the expensive dashboard derivations are memoized and the search requests are debounced before hitting the API.
 
 ## Test Accounts
 | Role | Username | Password |

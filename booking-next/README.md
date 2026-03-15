@@ -52,7 +52,47 @@ Create `.env.local`:
 NEXT_PUBLIC_API_BASE_URL=http://localhost:5248/api
 ```
 
+For production, set `NEXT_PUBLIC_API_BASE_URL` in your hosting platform environment settings (do not commit production URLs into source control).
+
+## Assignment 2.4 Polish Notes
+
+### Performance Optimizations Applied
+- `Dashboard` uses `useMemo` for active bookings, room type options, room/date sorting, pagination, and page number generation.
+- `BookingListClient` is wrapped in `memo` and receives stable callbacks via `useCallback` from `useBookings` and `Dashboard`.
+- Sorting logic runs only when booking data or sort option changes; typing in search does not trigger re-sorting until the debounced API response updates data.
+
+### Debounced Search Strategy
+- Search input triggers API filtering with a 400ms debounce via `useDebouncedValue`.
+- Requests are sent through Axios singleton (`apiClient`) and include `searchTerm` query param.
+- This reduces request flood while keeping the UI responsive.
+
+### Resilient UI
+- Added `app/dashboard/loading.tsx` with booking-card skeleton placeholders.
+- Added `app/dashboard/error.tsx` route-level error boundary with `Reset` action.
+- Added dashboard retry UI for recoverable API outages without full browser refresh.
+
+### Full Request Traceability
+1. Next.js page (`app/dashboard/page.tsx`) renders client dashboard.
+2. Client hook (`useBookings`) calls service functions in `src/services/api.ts`.
+3. Axios interceptors (`src/api/apiClient.ts`) attach JWT and handle 401 globally.
+4. .NET endpoint (`API/Controllers/BookingsController.cs`) validates and queries EF Core.
+5. EF Core persists and reads PostgreSQL through `ConferenceBookingDbContext`.
+
+### Bottleneck Audit (React DevTools)
+- Identified repeated list rerenders during dashboard interactions (search typing and control changes).
+- Resolved by stabilizing prop references (`useCallback`, `memo`) and isolating expensive computations with `useMemo`.
+
 Open: `http://localhost:3000`
+
+## CI Verification
+
+Run a strict local CI-style check before submission:
+
+```bash
+npm run ci:verify
+```
+
+This command runs strict linting (warnings fail the run) and then production build.
 
 ## Author
 Onthangaho Magoro

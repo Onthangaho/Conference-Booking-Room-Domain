@@ -3,14 +3,15 @@
 import Heading from "./Heading";
 import BookingListClient from "./BookingListClient";
 import BookingForm from "./BookingForm";
+import DashboardSkeleton from "./DashboardSkeleton";
 import { useBookings } from "../hooks/useBookings";
+import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { useEffect, useMemo, useState } from "react";
 
 const PAGE_SIZE_OPTIONS = [6, 12, 24];
 
 function Dashboard({ role }) {
   const normalizedRole = role?.toLowerCase(); // normalize role
-  const { bookings, loading, errors, addBooking, editBooking, deleteBooking } = useBookings(normalizedRole);
   const [searchTerm, setSearchTerm] = useState(() => localStorage.getItem("dashboard.searchTerm") || "");
   const [roomTypeFilter, setRoomTypeFilter] = useState(() => localStorage.getItem("dashboard.roomTypeFilter") || "all");
   const [sortBy, setSortBy] = useState(() => localStorage.getItem("dashboard.sortBy") || "startAsc");
@@ -19,6 +20,18 @@ function Dashboard({ role }) {
     const saved = Number(localStorage.getItem("dashboard.pageSize"));
     return PAGE_SIZE_OPTIONS.includes(saved) ? saved : 6;
   });
+  const debouncedSearchTerm = useDebouncedValue(searchTerm, 350);
+  const {
+    bookings,
+    loading,
+    searching,
+    loadError,
+    errors,
+    addBooking,
+    editBooking,
+    deleteBooking,
+    refreshBookings,
+  } = useBookings(normalizedRole, debouncedSearchTerm);
 
   const isEmployee = normalizedRole === "employee" || normalizedRole === "receptionist";
 
@@ -33,20 +46,12 @@ function Dashboard({ role }) {
   );
 
   const filteredBookings = useMemo(() => {
-    const normalizedSearch = searchTerm.trim().toLowerCase();
-
     return activeBookings.filter((booking) => {
       const matchesRoomType = roomTypeFilter === "all" || booking.roomType === roomTypeFilter;
 
-      const matchesSearch =
-        normalizedSearch.length === 0 ||
-        booking.roomName?.toLowerCase().includes(normalizedSearch) ||
-        booking.createdBy?.toLowerCase().includes(normalizedSearch) ||
-        booking.status?.toLowerCase().includes(normalizedSearch);
-
-      return matchesRoomType && matchesSearch;
+      return matchesRoomType;
     });
-  }, [activeBookings, roomTypeFilter, searchTerm]);
+  }, [activeBookings, roomTypeFilter]);
 
   const sortedBookings = useMemo(() => {
     const sorted = [...filteredBookings];
@@ -143,7 +148,7 @@ function Dashboard({ role }) {
     return pages;
   }, [totalPages, currentPageSafe]);
 
-  if (loading) return <p>Loading bookings...</p>;
+  if (loading) return <DashboardSkeleton />;
 
   return (
     <main className="container">
@@ -203,6 +208,17 @@ function Dashboard({ role }) {
           Reset Dashboard Preferences
         </button>
       </section>
+
+      {searching && <p className="status-text">Searching bookings...</p>}
+
+      {loadError && (
+        <section className="error-panel" role="alert">
+          <p>{loadError}</p>
+          <button className="btn secondary" type="button" onClick={refreshBookings}>
+            Retry
+          </button>
+        </section>
+      )}
 
       {isEmployee && (
         <>
