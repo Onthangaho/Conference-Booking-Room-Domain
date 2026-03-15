@@ -417,6 +417,60 @@ body {
   margin-bottom: 0.8rem;
 }
 
+.booking-skeleton-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.booking-skeleton-card {
+  background: #fff;
+  padding: 1rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+  border: 1px solid #e5e7eb;
+}
+
+.booking-skeleton-line {
+  height: 12px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #e5e7eb 25%, #f1f5f9 37%, #e5e7eb 63%);
+  background-size: 400% 100%;
+  margin-bottom: 0.7rem;
+  animation: skeleton-pulse 1.2s ease-in-out infinite;
+}
+
+.booking-skeleton-line.title {
+  height: 16px;
+  width: 70%;
+}
+
+.booking-skeleton-line.short {
+  width: 45%;
+}
+
+.error-state {
+  background: #fff;
+  border: 1px solid #fecaca;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+  padding: 1.2rem;
+}
+
+.error-state h2,
+.error-state h3 {
+  margin-top: 0;
+}
+
+@keyframes skeleton-pulse {
+  0% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0 50%;
+  }
+}
+
 @media (max-width: 900px) {
   .shell-content {
     grid-template-columns: 1fr;
