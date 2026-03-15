@@ -205,6 +205,97 @@ body {
   text-align: center;
 }
 
+.status-text {
+  margin: 0 0 1rem;
+  color: #475569;
+  font-weight: 600;
+}
+
+.error-panel {
+  background: #fff7ed;
+  border: 1px solid #fdba74;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.error-panel h2,
+.error-panel p {
+  margin: 0;
+}
+
+.skeleton-block,
+.skeleton-card,
+.skeleton-card-large,
+.skeleton-input,
+.skeleton-line {
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton-block::after,
+.skeleton-card::after,
+.skeleton-card-large::after,
+.skeleton-input::after,
+.skeleton-line::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+  animation: skeleton-shimmer 1.4s infinite;
+}
+
+.skeleton-title,
+.skeleton-subtitle,
+.skeleton-input,
+.skeleton-card,
+.skeleton-card-large {
+  background: #e2e8f0;
+  border-radius: 10px;
+}
+
+.skeleton-title {
+  width: 280px;
+  max-width: 100%;
+  height: 28px;
+  margin-bottom: 0.8rem;
+}
+
+.skeleton-subtitle {
+  width: 180px;
+  max-width: 100%;
+  height: 18px;
+  margin-bottom: 1rem;
+}
+
+.skeleton-tools {
+  align-items: stretch;
+}
+
+.skeleton-input {
+  min-height: 44px;
+}
+
+.skeleton-card {
+  min-height: 96px;
+}
+
+.skeleton-card-large {
+  min-height: 220px;
+}
+
+@keyframes skeleton-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 .modal-overlay {
   position: fixed;
   top: 0;

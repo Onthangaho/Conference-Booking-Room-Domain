@@ -8,6 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
+    "lint:strict": "eslint . --max-warnings=0",
+    "ci:verify": "npm run lint:strict && npm run build",
     "preview": "next start"
   },
   "dependencies": {
@@ -25,7 +27,7 @@
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
     "eslint": "^9.39.1",
-    "eslint-config-next": "^16.1.6",
+    "eslint-config-next": "^15.5.12",
     "eslint-plugin-react-hooks": "^7.0.1",
     "globals": "^16.5.0",
     "typescript": "^5.8.3"
