@@ -1,41 +1,58 @@
 "use client";
 // This hook manages booking data and real-time updates based on user role (employee or admin).
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { fetchBookings, fetchMyBookings, createBooking, updateBooking, cancelBooking } from "../services/api";
 import { parseValidationErrors } from "../utils/parseValidationErrors";
 import { toast } from "react-toastify";
 import axios from "axios";
 import * as signalR from "@microsoft/signalr";
 
-export function useBookings(role) {
+export function useBookings(role, searchTerm = "") {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searching, setSearching] = useState(false);
+  const [loadError, setLoadError] = useState("");
   const [errors, setErrors] = useState({});
 
   const isEmployeeView = role === "employee" || role === "receptionist";
 
-  // Load bookings on mount and when role changes
-  useEffect(() => {
-    const controller = new AbortController();
-    // Fetch bookings based on user role
-    const load = async () => {
+  const loadBookings = useCallback(
+    async (signal, nextSearchTerm = searchTerm) => {
+      const normalizedSearch = nextSearchTerm.trim();
+
+      if (normalizedSearch) {
+        setSearching(true);
+      } else {
+        setLoading(true);
+      }
+
       try {
         const data = isEmployeeView
-          ? await fetchMyBookings(controller.signal)
-          : await fetchBookings(controller.signal);
+          ? await fetchMyBookings(signal, normalizedSearch)
+          : await fetchBookings(signal, normalizedSearch);
 
         setBookings(Array.isArray(data) ? data : []);
+        setLoadError("");
       } catch (err) {
         if (axios.isCancel(err) || err?.code === "ERR_CANCELED") return;
+
+        setLoadError("Failed to load bookings. Try again.");
         toast.error("Failed to load bookings");
       } finally {
         setLoading(false);
+        setSearching(false);
       }
-    };
+    },
+    [isEmployeeView, searchTerm]
+  );
 
-    load();
+  // Load bookings on mount and when role changes
+  useEffect(() => {
+    const controller = new AbortController();
+
+    loadBookings(controller.signal, searchTerm);
     return () => controller.abort();
-  }, [isEmployeeView]);
+  }, [loadBookings, searchTerm]);
 // Set up SignalR connection for real-time updates
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -123,7 +140,7 @@ export function useBookings(role) {
     };
   }, [isEmployeeView, role]);
 
-  const addBooking = async (booking) => {
+  const addBooking = useCallback(async (booking) => {
     try {
       const created = await createBooking(booking);
       setBookings((prev) => [...prev, created]);
@@ -135,9 +152,9 @@ export function useBookings(role) {
       toast.error(err.response?.data?.message || "Failed to create booking");
       return false;
     }
-  };
+  }, []);
 
-  const editBooking = async (id, booking) => {
+  const editBooking = useCallback(async (id, booking) => {
     try {
       const updated = await updateBooking(id, booking);
       setBookings((prev) => prev.map((b) => (b.id === id ? updated : b)));
@@ -149,9 +166,9 @@ export function useBookings(role) {
       toast.error(err.response?.data?.message || "Failed to update booking");
       return false;
     }
-  };
+  }, []);
 
-  const deleteBooking = async (id) => {
+  const deleteBooking = useCallback(async (id) => {
     try {
       const cancelled = await cancelBooking(id);
       setBookings((prev) => prev.map((b) => (b.id === id ? cancelled : b)));
@@ -161,7 +178,23 @@ export function useBookings(role) {
       toast.error("Failed to cancel booking");
       return false;
     }
-  };
+  }, []);
 
-  return { bookings, loading, errors, addBooking, editBooking, deleteBooking };
+  const refreshBookings = useCallback(() => {
+    const controller = new AbortController();
+    loadBookings(controller.signal, searchTerm);
+    return () => controller.abort();
+  }, [loadBookings, searchTerm]);
+
+  return {
+    bookings,
+    loading,
+    searching,
+    loadError,
+    errors,
+    addBooking,
+    editBooking,
+    deleteBooking,
+    refreshBookings,
+  };
 }
