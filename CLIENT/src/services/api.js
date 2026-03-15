@@ -1,12 +1,18 @@
 import apiClient from "../api/apiClient";
 
 // Fetch all bookings
-export async function fetchBookings(signal) {
-  return await apiClient.get("/Bookings/all", { signal });
+export async function fetchBookings(signal, searchTerm = "") {
+  return await apiClient.get("/Bookings/all", {
+    signal,
+    params: searchTerm ? { searchTerm } : undefined,
+  });
 }
 
-export async function fetchMyBookings(signal) {
-  return await apiClient.get("/Bookings/mine", { signal });
+export async function fetchMyBookings(signal, searchTerm = "") {
+  return await apiClient.get("/Bookings/mine", {
+    signal,
+    params: searchTerm ? { searchTerm } : undefined,
+  });
 }
 
 export async function createBooking(booking) {
