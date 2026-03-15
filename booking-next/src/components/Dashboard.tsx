@@ -4,14 +4,14 @@ import Heading from "./Heading";
 import BookingListClient from "./BookingListClient";
 import BookingForm from "./BookingForm";
 import { useBookings } from "../hooks/useBookings";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 const PAGE_SIZE_OPTIONS = [6, 12, 24];
 
 function Dashboard({ role }) {
   const normalizedRole = role?.toLowerCase(); // normalize role
-  const { bookings, loading, errors, addBooking, editBooking, deleteBooking } = useBookings(normalizedRole);
   const [searchTerm, setSearchTerm] = useState(() => localStorage.getItem("dashboard.searchTerm") || "");
+  const { bookings, loading, loadError, errors, addBooking, editBooking, deleteBooking, retryLoad } = useBookings(normalizedRole, searchTerm);
   const [roomTypeFilter, setRoomTypeFilter] = useState(() => localStorage.getItem("dashboard.roomTypeFilter") || "all");
   const [sortBy, setSortBy] = useState(() => localStorage.getItem("dashboard.sortBy") || "startAsc");
   const [currentPage, setCurrentPage] = useState(1);
@@ -33,20 +33,12 @@ function Dashboard({ role }) {
   );
 
   const filteredBookings = useMemo(() => {
-    const normalizedSearch = searchTerm.trim().toLowerCase();
-
     return activeBookings.filter((booking) => {
       const matchesRoomType = roomTypeFilter === "all" || booking.roomType === roomTypeFilter;
 
-      const matchesSearch =
-        normalizedSearch.length === 0 ||
-        booking.roomName?.toLowerCase().includes(normalizedSearch) ||
-        booking.createdBy?.toLowerCase().includes(normalizedSearch) ||
-        booking.status?.toLowerCase().includes(normalizedSearch);
-
-      return matchesRoomType && matchesSearch;
+      return matchesRoomType;
     });
-  }, [activeBookings, roomTypeFilter, searchTerm]);
+  }, [activeBookings, roomTypeFilter]);
 
   const sortedBookings = useMemo(() => {
     const sorted = [...filteredBookings];
@@ -71,27 +63,27 @@ function Dashboard({ role }) {
     return sortedBookings.slice(startIndex, startIndex + pageSize);
   }, [sortedBookings, currentPageSafe, pageSize]);
 
-  const handleSearchChange = (value) => {
+  const handleSearchChange = useCallback((value) => {
     setSearchTerm(value);
     setCurrentPage(1);
-  };
+  }, []);
 
-  const handleRoomTypeChange = (value) => {
+  const handleRoomTypeChange = useCallback((value) => {
     setRoomTypeFilter(value);
     setCurrentPage(1);
-  };
+  }, []);
 
-  const handleSortChange = (value) => {
+  const handleSortChange = useCallback((value) => {
     setSortBy(value);
     setCurrentPage(1);
-  };
+  }, []);
 
-  const handlePageSizeChange = (value) => {
+  const handlePageSizeChange = useCallback((value) => {
     setPageSize(Number(value));
     setCurrentPage(1);
-  };
+  }, []);
 
-  const resetDashboardPreferences = () => {
+  const resetDashboardPreferences = useCallback(() => {
     localStorage.removeItem("dashboard.searchTerm");
     localStorage.removeItem("dashboard.roomTypeFilter");
     localStorage.removeItem("dashboard.sortBy");
@@ -102,7 +94,7 @@ function Dashboard({ role }) {
     setSortBy("startAsc");
     setPageSize(6);
     setCurrentPage(1);
-  };
+  }, []);
 
   useEffect(() => {
     localStorage.setItem("dashboard.sortBy", sortBy);
@@ -143,7 +135,34 @@ function Dashboard({ role }) {
     return pages;
   }, [totalPages, currentPageSafe]);
 
-  if (loading) return <p>Loading bookings...</p>;
+  if (loadError) {
+    return (
+      <main className="container">
+        <section className="error-state" role="alert">
+          <h3>Could not load bookings</h3>
+          <p>{loadError}</p>
+          <button className="btn primary" type="button" onClick={retryLoad}>Try Again</button>
+        </section>
+      </main>
+    );
+  }
+
+  if (loading) {
+    return (
+      <main className="container">
+        <section className="booking-skeleton-list" aria-hidden="true">
+          {Array.from({ length: 4 }, (_, index) => (
+            <article key={`booking-skeleton-${index}`} className="booking-skeleton-card">
+              <div className="booking-skeleton-line title" />
+              <div className="booking-skeleton-line" />
+              <div className="booking-skeleton-line" />
+              <div className="booking-skeleton-line short" />
+            </article>
+          ))}
+        </section>
+      </main>
+    );
+  }
 
   return (
     <main className="container">
